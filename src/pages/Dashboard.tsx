@@ -4,6 +4,7 @@ import { api } from '../lib/api'
 import { Link, useNavigate } from 'react-router-dom'
 import ImageUploader from '../components/ImageUploader'
 import ShopImageUploader from '../components/ShopImageUploader'
+import Spinner from '../components/Spinner'
 
 interface Shop {
   id: string
@@ -103,12 +104,8 @@ function handleShopImageUpdated(field: 'logo_path' | 'cover_path', path: string)
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-neutral-500">Chargement...</div>
-      </div>
-    )
-  }
+  return <Spinner fullScreen label="Chargement..." />
+}
 
   return (
     <div className="min-h-screen bg-neutral-50">

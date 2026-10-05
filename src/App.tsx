@@ -13,6 +13,7 @@ import AdminDashboard from './pages/admin/Dashboard'
 import AdminStylists from './pages/admin/Stylists'
 import AdminShops from './pages/admin/Shops'
 import PublicModel from './pages/PublicModel'
+import NotFound from './pages/NotFound'
 
 function App() {
   return (
@@ -88,6 +89,7 @@ function App() {
 
           {/* Racine */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

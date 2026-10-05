@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../lib/api'
+import Spinner from '../../components/Spinner'
 
 interface Shop {
   id: string
@@ -122,7 +123,9 @@ export default function AdminShops() {
           </div>
 
           {loading ? (
-            <div className="text-center py-8 text-neutral-500">Chargement...</div>
+            <div className="py-8 flex justify-center">
+              <Spinner label="Chargement..." />
+            </div>
           ) : shops.length === 0 ? (
             <div className="text-center py-8 text-neutral-500">
               Aucune boutique trouvée.

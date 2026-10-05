@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../lib/api'
+import Spinner from '../../components/Spinner'
 
 interface Category {
   id: string
@@ -100,12 +101,8 @@ export default function Categories() {
 }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-neutral-500">Chargement...</div>
-      </div>
-    )
-  }
+  return <Spinner fullScreen />
+}
 
   return (
     <div className="min-h-screen bg-neutral-50">

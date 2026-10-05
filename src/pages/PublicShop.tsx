@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../lib/api'
-
+import Spinner from '../components/Spinner'
 interface Shop {
   id: string
   name: string
@@ -65,15 +65,8 @@ export default function PublicShop() {
     : models
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-neutral-300 border-t-neutral-900 rounded-full animate-spin" />
-          <p className="text-sm text-neutral-500">Chargement...</p>
-        </div>
-      </div>
-    )
-  }
+  return <Spinner fullScreen label="Chargement de la boutique..." />
+}
 
   if (error || !shop) {
     return (
