@@ -12,6 +12,7 @@ import AdminCategories from './pages/admin/Categories'
 import AdminDashboard from './pages/admin/Dashboard'
 import AdminStylists from './pages/admin/Stylists'
 import AdminShops from './pages/admin/Shops'
+import PublicModel from './pages/PublicModel'
 
 function App() {
   return (
@@ -51,6 +52,7 @@ function App() {
               </AdminRoute>
             }
           />
+          <Route path="/shops/:slug/models/:modelId" element={<PublicModel />} />
           <Route path="/shops/:slug" element={<PublicShop />} />
 
           {/* Auth */}
