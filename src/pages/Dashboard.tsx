@@ -117,7 +117,7 @@ async function handleActivate() {
           <div className="flex items-center">
             {user?.role === 'admin' && (
               <Link
-                to="/admin/categories"
+                to="/admin"
                 className="text-sm text-neutral-600 hover:text-neutral-900 transition mr-4"
               >
                 Admin

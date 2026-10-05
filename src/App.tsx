@@ -9,6 +9,9 @@ import CreateModel from './pages/CreateModel'
 import CreateShop from './pages/CreateShop'
 import AdminRoute from './components/AdminRoute'
 import AdminCategories from './pages/admin/Categories'
+import AdminDashboard from './pages/admin/Dashboard'
+import AdminStylists from './pages/admin/Stylists'
+import AdminShops from './pages/admin/Shops'
 
 function App() {
   return (
@@ -16,6 +19,30 @@ function App() {
       <AuthProvider>
         <Routes>
           {/* Routes publiques */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/stylists"
+            element={
+              <AdminRoute>
+                <AdminStylists />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/shops"
+            element={
+              <AdminRoute>
+                <AdminShops />
+              </AdminRoute>
+            }
+          />
           <Route
             path="/admin/categories"
             element={
