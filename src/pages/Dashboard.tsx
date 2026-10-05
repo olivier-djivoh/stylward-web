@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { api } from '../lib/api'
 import { Link, useNavigate } from 'react-router-dom'
 import ImageUploader from '../components/ImageUploader'
+import ShopImageUploader from '../components/ShopImageUploader'
 
 interface Shop {
   id: string
@@ -11,6 +12,8 @@ interface Shop {
   description: string | null
   whatsapp: string | null
   status: string
+  logo_path: string | null      // ← ajouté
+  cover_path: string | null  
 }
 
 interface Model {
@@ -88,6 +91,10 @@ async function handleActivate() {
   } catch {
     alert('Erreur lors de l\'activation')
   }
+}
+
+function handleShopImageUpdated(field: 'logo_path' | 'cover_path', path: string) {
+  setShop((prev) => (prev ? { ...prev, [field]: path } : prev))
 }
 
   async function handleLogout() {
@@ -185,6 +192,28 @@ async function handleActivate() {
                     Activer la boutique
                   </button>
                 )}
+              </div>
+                            {/* Personnalisation */}
+              <div className="pt-4 border-t border-neutral-100 space-y-4">
+                <h3 className="text-sm font-bold text-neutral-900">
+                  Personnalisation
+                </h3>
+
+                <ShopImageUploader
+                  type="logo"
+                  currentUrl={shop.logo_path}
+                  onUploaded={(path) => handleShopImageUpdated('logo_path', path)}
+                  label="Logo"
+                  hint="Format carré recommandé (ex: 400×400)."
+                />
+
+                <ShopImageUploader
+                  type="cover"
+                  currentUrl={shop.cover_path}
+                  onUploaded={(path) => handleShopImageUpdated('cover_path', path)}
+                  label="Photo de couverture"
+                  hint="Format paysage recommandé (ex: 1200×600)."
+                />
               </div>
             </div>
           ) : (
