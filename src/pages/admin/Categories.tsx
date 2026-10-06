@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { api } from '../../lib/api'
+import AdminLayout from '../../components/AdminLayout'
 import Spinner from '../../components/Spinner'
 
 interface Category {
@@ -10,7 +10,7 @@ interface Category {
   sort_order: number
 }
 
-export default function Categories() {
+export default function AdminCategories() {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState({ name: '', sort_order: '' })
@@ -28,9 +28,7 @@ export default function Categories() {
     }
   }
 
-  useEffect(() => {
-    load()
-  }, [])
+  useEffect(() => { load() }, [])
 
   function resetForm() {
     setForm({ name: '', sort_order: '' })
@@ -44,107 +42,84 @@ export default function Categories() {
     setError('')
   }
 
- async function handleSubmit(e: FormEvent) {
-  e.preventDefault()
-  setError('')
-  setSuccess('')
-  setSaving(true)
-
-  const currentName = form.name
-  const isEditing = !!editingId
-
-  const payload = {
-    name: form.name,
-    sort_order: form.sort_order ? Number(form.sort_order) : 0,
-    status: 'active',
-  }
-
-  try {
-    if (editingId) {
-      await api.put(`/admin/categories/${editingId}`, payload)
-      setSuccess(`Catégorie « ${currentName} » modifiée.`)
-    } else {
-      await api.post('/admin/categories', payload)
-      setSuccess(`Catégorie « ${currentName} » créée avec succès.`)
-    }
-    resetForm()
-    await load()
-    setTimeout(() => setSuccess(''), 3000)
-  } catch (err: any) {
-    if (err.response?.data?.errors) {
-      const firstError = Object.values(err.response.data.errors)[0]
-      setError(Array.isArray(firstError) ? firstError[0] : String(firstError))
-    } else if (err.response?.data?.message) {
-      setError(err.response.data.message)
-    } else {
-      setError('Une erreur est survenue')
-    }
-  } finally {
-    setSaving(false)
-  }
-}
-
-  async function handleDelete(id: string) {
-  if (!confirm('Supprimer cette catégorie ?')) return
-  const cat = categories.find((c) => c.id === id)
-  const name = cat?.name ?? 'Catégorie'
-
-  try {
-    await api.delete(`/admin/categories/${id}`)
-    setSuccess(`Catégorie « ${name} » supprimée.`)
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault()
     setError('')
-    await load()
-    setTimeout(() => setSuccess(''), 3000)
-  } catch (err: any) {
-    setError(err.response?.data?.message || 'Erreur lors de la suppression')
-  }
-}
+    setSuccess('')
+    setSaving(true)
 
-  if (loading) {
-  return <Spinner fullScreen />
-}
+    const currentName = form.name
+    const isEditing = !!editingId
+    const payload = {
+      name: form.name,
+      sort_order: form.sort_order ? Number(form.sort_order) : 0,
+      status: 'active',
+    }
+
+    try {
+      if (isEditing) {
+        await api.put(`/admin/categories/${editingId}`, payload)
+        setSuccess(`Catégorie « ${currentName} » modifiée.`)
+      } else {
+        await api.post('/admin/categories', payload)
+        setSuccess(`Catégorie « ${currentName} » créée.`)
+      }
+      resetForm()
+      await load()
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (err: any) {
+      if (err.response?.data?.errors) {
+        const first = Object.values(err.response.data.errors)[0]
+        setError(Array.isArray(first) ? first[0] : String(first))
+      } else {
+        setError('Erreur lors de l\'enregistrement')
+      }
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleDelete(id: string, name: string) {
+    if (!confirm(`Supprimer la catégorie « ${name} » ?`)) return
+    try {
+      await api.delete(`/admin/categories/${id}`)
+      setSuccess(`Catégorie « ${name} » supprimée.`)
+      setError('')
+      await load()
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Erreur lors de la suppression')
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <header className="bg-white border-b border-neutral-200">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link
-            to="/dashboard"
-            className="text-neutral-500 hover:text-neutral-900 transition"
-          >
-            ← Retour
-          </Link>
-          <h1 className="text-lg font-bold text-neutral-900">
-            Gestion des catégories
-          </h1>
-        </div>
-      </header>
-
-      <main className="max-w-5xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <AdminLayout
+      title="Catégories"
+      subtitle="Organisez le catalogue global de la plateforme"
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
 
         {/* Formulaire */}
-        <div className="lg:col-span-1">
-          <div className="card sticky top-6">
-            <h2 className="text-lg font-bold text-neutral-900 mb-4">
+        <div className="min-w-0 lg:col-span-1">
+          <div className="card lg:sticky lg:top-6">
+            <h2 className="font-display text-xl text-noir mb-5">
               {editingId ? 'Modifier' : 'Ajouter'} une catégorie
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+                <div className="p-3 rounded-lg bg-alerte-soft border border-alerte/20 text-alerte text-xs">
                   {error}
                 </div>
               )}
               {success && (
-                <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+                <div className="p-3 rounded-lg bg-succes-soft border border-succes/20 text-succes text-xs">
                   ✅ {success}
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Nom *
-                </label>
+                <label className="input-label">Nom *</label>
                 <input
                   type="text"
                   value={form.name}
@@ -157,9 +132,7 @@ export default function Categories() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Ordre d'affichage
-                </label>
+                <label className="input-label">Ordre d'affichage</label>
                 <input
                   type="number"
                   value={form.sort_order}
@@ -169,25 +142,17 @@ export default function Categories() {
                   className="input-field"
                   placeholder="10"
                 />
-                <p className="text-xs text-neutral-500 mt-1">
+                <p className="text-xs text-pierre-400 mt-1.5">
                   Plus petit = affiché en premier.
                 </p>
               </div>
 
               <div className="flex gap-2 pt-2">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="btn-primary flex-1 text-sm"
-                >
+                <button type="submit" disabled={saving} className="btn-primary flex-1 text-sm">
                   {saving ? '...' : editingId ? 'Modifier' : 'Ajouter'}
                 </button>
                 {editingId && (
-                  <button
-                    type="button"
-                    onClick={resetForm}
-                    className="btn-secondary text-sm"
-                  >
+                  <button type="button" onClick={resetForm} className="btn-secondary text-sm">
                     Annuler
                   </button>
                 )}
@@ -197,66 +162,51 @@ export default function Categories() {
         </div>
 
         {/* Liste */}
-        <div className="lg:col-span-2">
-          <div className="card">
-            <div className="flex items-baseline justify-between mb-4">
-              <h2 className="text-lg font-bold text-neutral-900">
-                Catégories
-              </h2>
-              <span className="text-sm text-neutral-500">
-                {categories.length} au total
-              </span>
+        <div className="min-w-0 lg:col-span-2">
+          {loading ? (
+            <div className="py-20 flex justify-center"><Spinner /></div>
+          ) : categories.length === 0 ? (
+            <div className="card text-center py-16">
+              <p className="text-pierre-500">Aucune catégorie.</p>
             </div>
-
-            {categories.length === 0 ? (
-              <p className="text-neutral-500 py-8 text-center">
-                Aucune catégorie.
-              </p>
-            ) : (
-              <ul className="divide-y divide-neutral-100">
+          ) : (
+            <div className="card p-0 overflow-hidden">
+              <div className="divide-y divide-pierre-100">
                 {categories.map((cat) => (
-                  <li
-                    key={cat.id}
-                    className="py-3 flex items-center justify-between gap-3"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="text-xs text-neutral-400 font-mono w-8 text-right">
+                  <div key={cat.id} className="p-4 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 min-w-0">
+                      <span className="text-xs text-pierre-400 font-mono w-8 text-right shrink-0">
                         {cat.sort_order}
                       </span>
                       <div className="min-w-0">
-                        <p className="font-medium text-neutral-900 truncate">
-                          {cat.name}
-                        </p>
-                        <p className="text-xs text-neutral-500 font-mono">
+                        <p className="font-medium text-noir truncate">{cat.name}</p>
+                        <p className="text-xs text-pierre-400 font-mono truncate">
                           {cat.slug}
                         </p>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-1 shrink-0">
                       <button
-                        type="button"
                         onClick={() => startEdit(cat)}
-                        className="text-xs text-neutral-600 hover:text-neutral-900 underline"
+                        className="text-xs text-pierre-500 hover:text-noir px-3 py-1.5 rounded-lg hover:bg-pierre-50 transition"
                       >
                         Modifier
                       </button>
                       <button
-                        type="button"
-                        onClick={() => handleDelete(cat.id)}
-                        className="text-xs text-red-600 hover:text-red-800 underline"
+                        onClick={() => handleDelete(cat.id, cat.name)}
+                        className="text-xs text-pierre-400 hover:text-alerte px-3 py-1.5 rounded-lg hover:bg-alerte-soft transition"
                       >
                         Supprimer
                       </button>
                     </div>
-                  </li>
+                  </div>
                 ))}
-              </ul>
-            )}
-          </div>
+              </div>
+            </div>
+          )}
         </div>
 
-      </main>
-    </div>
+      </div>
+    </AdminLayout>
   )
 }

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../lib/api'
-import { Link, useNavigate } from 'react-router-dom'
-import ImageUploader from '../components/ImageUploader'
-import ShopImageUploader from '../components/ShopImageUploader'
+import DashboardLayout from '../components/DashboardLayout'
 import Spinner from '../components/Spinner'
+import ShopImageUploader from '../components/ShopImageUploader'
 
 interface Shop {
   id: string
@@ -13,8 +13,8 @@ interface Shop {
   description: string | null
   whatsapp: string | null
   status: string
-  logo_path: string | null      // ← ajouté
-  cover_path: string | null  
+  logo_path: string | null
+  cover_path: string | null
 }
 
 interface Model {
@@ -51,454 +51,318 @@ interface ShopStats {
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const [shop, setShop] = useState<Shop | null>(null)
   const [models, setModels] = useState<Model[]>([])
-  const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<ShopStats | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-  async function load() {
-    try {
-      const shopRes = await api.get('/shop').catch(() => ({ data: null }))
-      setShop(shopRes.data)
+    async function load() {
+      try {
+        const shopRes = await api.get('/shop').catch(() => ({ data: null }))
+        setShop(shopRes.data)
 
-      if (shopRes.data) {
-        const [modelsRes, statsRes] = await Promise.all([
-          api.get('/models').catch(() => ({ data: { data: [] } })),
-          api.get('/shop/stats').catch(() => ({ data: null })),
-        ])
-        setModels(modelsRes.data.data || [])
-        setStats(statsRes.data)
+        if (shopRes.data) {
+          const [modelsRes, statsRes] = await Promise.all([
+            api.get('/models').catch(() => ({ data: { data: [] } })),
+            api.get('/shop/stats').catch(() => ({ data: null })),
+          ])
+          setModels(modelsRes.data.data || [])
+          setStats(statsRes.data)
+        }
+      } finally {
+        setLoading(false)
       }
-    } finally {
-      setLoading(false)
+    }
+    load()
+  }, [])
+
+  async function handleActivate() {
+    try {
+      const { data } = await api.patch('/shop/activate')
+      setShop(data)
+    } catch {
+      alert('Erreur lors de l\'activation')
     }
   }
-  load()
-}, [])
 
-  function handleImageUploaded(modelId: string, image: { id: string; path: string; type: string }) {
-  setModels((prev) =>
-    prev.map((m) =>
-      m.id === modelId
-        ? { ...m, images: [{ id: image.id, path: image.path }, ...m.images] }
-        : m
-    )
-  )
- }
-
- async function handlePublish(modelId: string) {
-  try {
-    await api.patch(`/models/${modelId}/publish`)
-    setModels((prev) =>
-      prev.map((m) =>
-        m.id === modelId ? { ...m, status: 'published' } : m
-      )
-    )
-  } catch {
-    alert('Erreur lors de la publication')
-  }
-}
-
-async function handleUnpublish(modelId: string) {
-  try {
-    await api.patch(`/models/${modelId}/unpublish`)
-    setModels((prev) =>
-      prev.map((m) =>
-        m.id === modelId ? { ...m, status: 'draft' } : m
-      )
-    )
-  } catch {
-    alert('Erreur lors de la dépublication')
-  }
-}
-
-async function handleActivate() {
-  try {
-    const { data } = await api.patch('/shop/activate')
-    setShop(data)
-  } catch {
-    alert('Erreur lors de l\'activation')
-  }
-}
-
-function handleShopImageUpdated(field: 'logo_path' | 'cover_path', path: string) {
-  setShop((prev) => (prev ? { ...prev, [field]: path } : prev))
-}
-
-  async function handleLogout() {
-    await logout()
-    navigate('/login')
+  function handleShopImageUpdated(field: 'logo_path' | 'cover_path', path: string) {
+    setShop((prev) => (prev ? { ...prev, [field]: path } : prev))
   }
 
   if (loading) {
-  return <Spinner fullScreen label="Chargement..." />
-}
+    return (
+      <DashboardLayout>
+        <div className="py-20 flex justify-center">
+          <Spinner label="Chargement..." />
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  const publishedCount = models.filter((m) => m.status === 'published').length
+  const draftCount = models.filter((m) => m.status !== 'published').length
+  const recentModels = models.slice(0, 4)
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
-      <header className="bg-white border-b border-neutral-200">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-neutral-900">SaaS Stylistes</h1>
-            <p className="text-xs text-neutral-500">
-              Bonjour {user?.first_name} {user?.last_name}
-            </p>
-          </div>
-          <div className="flex items-center">
-            {user?.role === 'admin' && (
-              <Link
-                to="/admin"
-                className="text-sm text-neutral-600 hover:text-neutral-900 transition mr-4"
-              >
-                Admin
-              </Link>
-            )}
-            <button
-              onClick={handleLogout}
-              className="text-sm text-neutral-600 hover:text-neutral-900 transition"
-            >
-              Déconnexion
-            </button>
-          </div>
+    <DashboardLayout>
+      {/* ====== SALUTATION ====== */}
+      <div className="mb-10">
+        <p className="font-overline text-pierre-500 mb-2">
+          {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+        </p>
+        <h1 className="font-display text-4xl text-noir">
+          Bonjour {user?.first_name} 👋
+        </h1>
+        <p className="text-pierre-500 mt-2">
+          {shop
+            ? 'Voici un aperçu de votre activité.'
+            : 'Commençons par créer votre boutique.'}
+        </p>
+      </div>
+
+      {/* ====== CAS 1 : PAS DE BOUTIQUE ====== */}
+      {!shop && (
+        <div className="card max-w-xl">
+          <h2 className="font-display text-2xl text-noir mb-3">
+            Créez votre boutique
+          </h2>
+          <p className="text-pierre-500 text-sm mb-6 leading-relaxed">
+            Votre boutique est votre vitrine. Elle aura un lien unique
+            à partager avec vos clients sur WhatsApp.
+          </p>
+          <Link to="/dashboard/shop/new" className="btn-primary">
+            Créer ma boutique
+          </Link>
         </div>
-      </header>
+      )}
 
-      <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+      {/* ====== CAS 2 : BOUTIQUE EXISTANTE ====== */}
+      {shop && (
+        <div className="space-y-8">
 
-        {/* Boutique */}
-        <section className="card">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <h2 className="text-xl font-bold text-neutral-900">Ma boutique</h2>
-              <p className="text-sm text-neutral-500">
-                {shop ? `Statut : ${shop.status}` : 'Aucune boutique créée'}
-              </p>
-            </div>
-          </div>
-
-          {shop ? (
-            <div className="space-y-3">
-              <div>
-                <p className="text-lg font-medium text-neutral-900">{shop.name}</p>
-                {shop.description && (
-                  <p className="text-sm text-neutral-600 mt-1">{shop.description}</p>
+          {/* Raccourcis principaux */}
+          <div className="grid sm:grid-cols-2 gap-4">
+            {/* Boutique card */}
+            <div className="card relative overflow-hidden">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <p className="font-overline text-pierre-500 mb-1">Ma boutique</p>
+                  <h3 className="font-display text-xl text-noir">{shop.name}</h3>
+                </div>
+                {shop.status === 'active' ? (
+                  <span className="badge badge-succes">En ligne</span>
+                ) : (
+                  <span className="badge badge-neutre">Brouillon</span>
                 )}
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-2 border-t border-neutral-100">
-                <div className="flex-1">
-                  <p className="text-sm text-neutral-500 mb-1">Lien public :</p>
-                  <a
-                    href={`/shops/${shop.slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-mono text-neutral-900 text-sm hover:underline"
-                  >
-                    /shops/{shop.slug}
-                  </a>
-                </div>
+              <p className="text-xs text-pierre-400 font-mono mb-4 truncate">
+                /shops/{shop.slug}
+              </p>
+
+              <div className="flex gap-2">
                 {shop.status === 'active' ? (
-                  <a
-                    href={`/shops/${shop.slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-secondary text-sm py-2 px-4"
-                  >
-                    Voir la boutique
-                  </a>
+                  <>
+                    <a
+                      href={`/shops/${shop.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-secondary text-sm flex-1"
+                    >
+                      Voir
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/shops/${shop.slug}`)
+                        alert('Lien copié !')
+                      }}
+                      className="btn-primary text-sm flex-1"
+                    >
+                      Copier le lien
+                    </button>
+                  </>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={handleActivate}
-                    className="btn-primary text-sm py-2 px-4"
-                  >
+                  <button onClick={handleActivate} className="btn-primary text-sm w-full">
                     Activer la boutique
                   </button>
                 )}
               </div>
-                            {/* Personnalisation */}
-              <div className="pt-4 border-t border-neutral-100 space-y-4">
-                <h3 className="text-sm font-bold text-neutral-900">
-                  Personnalisation
-                </h3>
+            </div>
 
+            {/* Stats rapides */}
+            {stats && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="card">
+                  <p className="font-overline text-pierre-500 mb-2">Vues</p>
+                  <p className="text-3xl font-display text-noir">
+                    {stats.views.total}
+                  </p>
+                  <p className="text-xs text-pierre-400 mt-1">au total</p>
+                </div>
+                <div className="card">
+                  <p className="font-overline text-pierre-500 mb-2">Spectateurs</p>
+                  <p className="text-3xl font-display text-noir">
+                    {stats.visitors.total}
+                  </p>
+                  <p className="text-xs text-pierre-400 mt-1">uniques</p>
+                </div>
+                <div className="card">
+                  <p className="font-overline text-pierre-500 mb-2">Créations</p>
+                  <p className="text-3xl font-display text-noir">
+                    {models.length}
+                  </p>
+                  <p className="text-xs text-pierre-400 mt-1">
+                    {publishedCount} publiée{publishedCount > 1 ? 's' : ''}
+                  </p>
+                </div>
+                <div className="card">
+                  <p className="font-overline text-pierre-500 mb-2">Contacts</p>
+                  <p className="text-3xl font-display text-noir">
+                    {stats.whatsapp_clicks.this_week}
+                  </p>
+                  <p className="text-xs text-pierre-400 mt-1">cette semaine</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Graphique 7 jours */}
+          {stats && stats.daily_views.length > 0 && (
+            <div className="card">
+              <div className="flex items-baseline justify-between mb-6">
+                <div>
+                  <p className="font-overline text-pierre-500 mb-1">Activité</p>
+                  <h3 className="font-display text-xl text-noir">7 derniers jours</h3>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-display text-noir">
+                    {stats.views.this_week}
+                  </p>
+                  <p className="text-xs text-pierre-400">vues cette semaine</p>
+                </div>
+              </div>
+
+              <div className="flex items-end justify-between gap-2 h-32">
+                {stats.daily_views.map((day) => {
+                  const max = Math.max(...stats.daily_views.map((d) => d.count), 1)
+                  const height = (day.count / max) * 100
+                  return (
+                    <div key={day.date} className="flex-1 flex flex-col items-center gap-2">
+                      <span className="text-[10px] text-pierre-400 font-medium">
+                        {day.count > 0 ? day.count : ''}
+                      </span>
+                      <div className="w-full flex-1 flex items-end">
+                        <div
+                          className="w-full bg-noir rounded-t-sm transition-all duration-500"
+                          style={{ height: `${Math.max(height, 3)}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-pierre-400 capitalize">
+                        {day.label}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Dernières créations */}
+          <div>
+            <div className="flex items-baseline justify-between mb-5">
+              <div>
+                <p className="font-overline text-pierre-500 mb-1">Catalogue</p>
+                <h2 className="font-display text-2xl text-noir">
+                  Dernières créations
+                </h2>
+              </div>
+              <Link
+                to="/dashboard/models"
+                className="text-sm text-pierre-500 hover:text-noir transition"
+              >
+                Voir tout →
+              </Link>
+            </div>
+
+            {recentModels.length === 0 ? (
+              <div className="card text-center py-12">
+                <p className="text-pierre-500 text-sm mb-4">
+                  Vous n'avez pas encore ajouté de création.
+                </p>
+                <Link to="/dashboard/models/new" className="btn-primary inline-flex">
+                  Ajouter ma première création
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {recentModels.map((model) => (
+                  <Link
+                    key={model.id}
+                    to="/dashboard/models"
+                    className="group"
+                  >
+                    <div className="aspect-[3/4] bg-pierre-100 rounded-xl overflow-hidden relative">
+                      {model.images?.[0] ? (
+                        <img
+                          src={`/storage/${model.images[0].path}`}
+                          alt={model.name}
+                          className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-pierre-300 text-xs">
+                          Sans image
+                        </div>
+                      )}
+                      {model.status === 'published' && (
+                        <span className="absolute top-2 left-2 badge badge-succes text-[10px] py-0.5">
+                          En ligne
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-3">
+                      <p className="text-sm font-medium text-noir truncate">
+                        {model.name}
+                      </p>
+                      {model.price && (
+                        <p className="text-xs text-pierre-500 mt-0.5">
+                          {Number(model.price).toLocaleString('fr-FR')} {model.currency}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Personnalisation */}
+          <div>
+            <p className="font-overline text-pierre-500 mb-4">Personnalisation</p>
+            <div className="card">
+              <div className="grid sm:grid-cols-2 gap-8">
                 <ShopImageUploader
                   type="logo"
                   currentUrl={shop.logo_path}
                   onUploaded={(path) => handleShopImageUpdated('logo_path', path)}
-                  label="Logo"
-                  hint="Format carré recommandé (ex: 400×400)."
+                  label="Logo de la boutique"
+                  hint="Format carré recommandé, 400×400px."
                 />
-
                 <ShopImageUploader
                   type="cover"
                   currentUrl={shop.cover_path}
                   onUploaded={(path) => handleShopImageUpdated('cover_path', path)}
                   label="Photo de couverture"
-                  hint="Format paysage recommandé (ex: 1200×600)."
+                  hint="Format paysage, 1200×600px."
                 />
               </div>
             </div>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-neutral-500">
-                Vous n'avez pas encore créé votre boutique. Créez-la pour commencer
-                à ajouter vos modèles.
-              </p>
-              <Link
-                to="/dashboard/shop/new"
-                className="btn-primary inline-block text-sm py-2 px-4"
-              >
-                + Créer ma boutique
-              </Link>
-            </div>
-          )}
-        </section>
-
-        {/* Statistiques */}
-{/* Statistiques */}
-{shop && stats && (
-  <section className="card">
-    <h2 className="text-xl font-bold text-neutral-900 mb-4">
-      Statistiques
-    </h2>
-
-    {/* Chiffres clés */}
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-      {/* Vues cette semaine */}
-      <div className="bg-neutral-50 rounded-xl p-4">
-        <p className="text-xs text-neutral-500 mb-1">Vues cette semaine</p>
-        <div className="flex items-baseline gap-2">
-          <p className="text-2xl font-bold text-neutral-900">
-            {stats.views.this_week}
-          </p>
-          {stats.views.evolution !== null && (
-            <span
-              className={`text-xs font-medium ${
-                stats.views.evolution >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}
-            >
-              {stats.views.evolution >= 0 ? '+' : ''}{stats.views.evolution}%
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Spectateurs uniques */}
-      <div className="bg-neutral-50 rounded-xl p-4">
-        <p className="text-xs text-neutral-500 mb-1">Spectateurs uniques</p>
-        <div className="flex items-baseline gap-2">
-          <p className="text-2xl font-bold text-neutral-900">
-            {stats.visitors.total}
-          </p>
-          {stats.visitors.evolution !== null && (
-            <span
-              className={`text-xs font-medium ${
-                stats.visitors.evolution >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}
-            >
-              {stats.visitors.evolution >= 0 ? '+' : ''}{stats.visitors.evolution}%
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Clics WhatsApp */}
-      <div className="bg-neutral-50 rounded-xl p-4">
-        <p className="text-xs text-neutral-500 mb-1">Clics WhatsApp</p>
-        <div className="flex items-baseline gap-2">
-          <p className="text-2xl font-bold text-neutral-900">
-            {stats.whatsapp_clicks.this_week}
-          </p>
-          {stats.whatsapp_clicks.evolution !== null && (
-            <span
-              className={`text-xs font-medium ${
-                stats.whatsapp_clicks.evolution >= 0
-                  ? 'text-green-600'
-                  : 'text-red-600'
-              }`}
-            >
-              {stats.whatsapp_clicks.evolution >= 0 ? '+' : ''}
-              {stats.whatsapp_clicks.evolution}%
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Vues totales */}
-      <div className="bg-neutral-50 rounded-xl p-4">
-        <p className="text-xs text-neutral-500 mb-1">Vues totales</p>
-        <p className="text-2xl font-bold text-neutral-900">
-          {stats.views.total}
-        </p>
-      </div>
-    </div>
-
-    {/* Graphique 7 jours */}
-    {stats.daily_views.length > 0 && (
-      <div className="mb-6">
-        <p className="text-xs uppercase tracking-wider text-neutral-500 mb-3">
-          7 derniers jours
-        </p>
-        <div className="flex items-end justify-between gap-2 h-24">
-          {stats.daily_views.map((day) => {
-            const max = Math.max(...stats.daily_views.map((d) => d.count), 1)
-            const height = (day.count / max) * 100
-            return (
-              <div key={day.date} className="flex-1 flex flex-col items-center gap-1">
-                <span className="text-[10px] text-neutral-400">
-                  {day.count > 0 ? day.count : ''}
-                </span>
-                <div
-                  className="w-full bg-neutral-900 rounded-t transition-all"
-                  style={{ height: `${Math.max(height, 4)}%` }}
-                />
-                <span className="text-[10px] text-neutral-500 capitalize">
-                  {day.label}
-                </span>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    )}
-
-    {/* Top modèles */}
-    {stats.top_models.length > 0 && (
-  <div>
-    <p className="text-xs uppercase tracking-wider text-neutral-500 mb-3">
-      Top modèles vus
-    </p>
-    <ul className="divide-y divide-neutral-100">
-      {stats.top_models.map((m, i) => (
-        <li
-          key={m.id}
-          className="flex items-center justify-between gap-3 py-3"
-        >
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="text-xs text-neutral-400 font-mono w-5 shrink-0">
-              #{i + 1}
-            </span>
-            <span className="text-neutral-900 text-sm font-medium truncate">
-              {m.name}
-            </span>
-          </div>
-          <div className="flex items-center gap-4 shrink-0 text-xs">
-            <div className="text-right">
-              <p className="font-semibold text-neutral-900">
-                {m.views}
-              </p>
-              <p className="text-neutral-400 text-[10px] uppercase tracking-wider">
-                vue{m.views > 1 ? 's' : ''}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="font-semibold text-neutral-900">
-                {m.visitors}
-              </p>
-              <p className="text-neutral-400 text-[10px] uppercase tracking-wider">
-                spectateur{m.visitors > 1 ? 's' : ''}
-              </p>
-            </div>
-          </div>
-        </li>
-      ))}
-    </ul>
-  </div>
-)}
-
-    {/* État vide */}
-    {stats.views.total === 0 && (
-      <p className="text-sm text-neutral-500 text-center py-4">
-        Aucune visite pour le moment. Partagez le lien de votre boutique pour
-        commencer à voir les statistiques.
-      </p>
-    )}
-  </section>
-)}
-
-        {/* Modèles */}
-        {shop && (
-          <section className="card">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-xl font-bold text-neutral-900">Mes modèles</h2>
-              <p className="text-sm text-neutral-500">
-                {models.length} modèle{models.length > 1 ? 's' : ''}
-              </p>
-            </div>
-            <Link
-              to="/dashboard/models/new"
-              className="btn-primary text-sm py-2 px-4"
-            >
-              + Nouveau modèle
-            </Link>
           </div>
 
-            {models.length === 0 ? (
-              <p className="text-neutral-500">Aucun modèle pour l'instant.</p>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {models.map((model) => (
-                  <div
-                    key={model.id}
-                    className="border border-neutral-200 rounded-lg overflow-hidden bg-white"
-                  >
-                    <div className="aspect-square bg-neutral-100 flex items-center justify-center">
-                      {model.images?.[0] ? (
-                        <img
-                          src={`/storage/${model.images[0].path}`}
-                          alt={model.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-neutral-400 text-xs">Sans image</span>
-                      )}
-                    </div>
-                    <div className="p-2 space-y-2">
-                      <div>
-                        <p className="text-sm font-medium text-neutral-900 truncate">
-                          {model.name}
-                        </p>
-                        <p className="text-xs text-neutral-500">
-                          {model.status === 'published' ? '✅ Publié' : '📝 Brouillon'}
-                        </p>
-                      </div>
-
-                      <ImageUploader
-                        modelId={model.id}
-                        onUploaded={(image) => handleImageUploaded(model.id, image)}
-                      />
-
-                      {model.status === 'published' ? (
-                        <button
-                          type="button"
-                          onClick={() => handleUnpublish(model.id)}
-                          className="w-full text-xs text-neutral-600 hover:text-neutral-900 underline"
-                        >
-                          Dépublier
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => handlePublish(model.id)}
-                          className="w-full text-xs bg-neutral-900 hover:bg-neutral-800 text-white py-1.5 px-3 rounded"
-                        >
-                          Publier
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-
-      </main>
-    </div>
+        </div>
+      )}
+    </DashboardLayout>
   )
 }

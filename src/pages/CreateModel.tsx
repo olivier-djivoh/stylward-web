@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
+import DashboardLayout from '../components/DashboardLayout'
 
 interface Category {
   id: string
@@ -49,15 +50,13 @@ export default function CreateModel() {
       if (form.price) payload.price = Number(form.price)
 
       await api.post('/models', payload)
-      navigate('/dashboard')
+      navigate('/dashboard/models')
     } catch (err: any) {
       if (err.response?.data?.errors) {
-        const firstError = Object.values(err.response.data.errors)[0]
-        setError(Array.isArray(firstError) ? firstError[0] : String(firstError))
-      } else if (err.response?.data?.message) {
-        setError(err.response.data.message)
+        const first = Object.values(err.response.data.errors)[0]
+        setError(Array.isArray(first) ? first[0] : String(first))
       } else {
-        setError('Une erreur est survenue')
+        setError('Erreur lors de la création')
       }
     } finally {
       setLoading(false)
@@ -65,140 +64,128 @@ export default function CreateModel() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <header className="bg-white border-b border-neutral-200">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link
-            to="/dashboard"
-            className="text-neutral-500 hover:text-neutral-900 transition"
-          >
-            ← Retour
-          </Link>
-          <h1 className="text-lg font-bold text-neutral-900">Nouveau modèle</h1>
-        </div>
-      </header>
+    <DashboardLayout
+      title="Nouvelle création"
+      subtitle="Ajoutez une pièce à votre catalogue"
+    >
+      <div className="max-w-2xl">
+        <form onSubmit={handleSubmit} className="space-y-8">
 
-      <main className="max-w-3xl mx-auto px-4 py-8">
-        <form onSubmit={handleSubmit} className="card space-y-5">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+            <div className="p-4 rounded-[10px] bg-alerte-soft border border-alerte/20 text-alerte text-sm">
               {error}
             </div>
           )}
 
+          {/* Section : Informations */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Nom du modèle *
-            </label>
-            <input
-              type="text"
-              value={form.name}
-              onChange={(e) => update('name', e.target.value)}
-              required
-              maxLength={150}
-              className="input-field"
-              placeholder="Ex: Veste en lin beige"
-            />
-          </div>
+            <p className="font-overline text-pierre-500 mb-4">Informations</p>
+            <div className="card space-y-5">
+              <div>
+                <label className="input-label">Nom de la création *</label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => update('name', e.target.value)}
+                  required
+                  maxLength={150}
+                  className="input-field"
+                  placeholder="Ex: Veste en lin beige"
+                />
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Catégorie
-            </label>
-            <select
-              value={form.category_id}
-              onChange={(e) => update('category_id', e.target.value)}
-              className="input-field"
-            >
-              <option value="">— Choisir une catégorie —</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
+              <div>
+                <label className="input-label">Catégorie</label>
+                <select
+                  value={form.category_id}
+                  onChange={(e) => update('category_id', e.target.value)}
+                  className="input-field"
+                >
+                  <option value="">— Choisir —</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Description
-            </label>
-            <textarea
-              value={form.description}
-              onChange={(e) => update('description', e.target.value)}
-              rows={4}
-              maxLength={5000}
-              className="input-field"
-              placeholder="Décrivez le modèle, les finitions, le tissu..."
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Prix
-              </label>
-              <input
-                type="number"
-                value={form.price}
-                onChange={(e) => update('price', e.target.value)}
-                min="0"
-                step="100"
-                className="input-field"
-                placeholder="Ex: 45000"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Couleur
-              </label>
-              <input
-                type="text"
-                value={form.color}
-                onChange={(e) => update('color', e.target.value)}
-                maxLength={50}
-                className="input-field"
-                placeholder="Ex: Beige"
-              />
+              <div>
+                <label className="input-label">Description</label>
+                <textarea
+                  value={form.description}
+                  onChange={(e) => update('description', e.target.value)}
+                  rows={4}
+                  maxLength={5000}
+                  className="input-field resize-none"
+                  placeholder="Décrivez votre création, les finitions, le tissu..."
+                />
+              </div>
             </div>
           </div>
 
+          {/* Section : Détails */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Référence
-            </label>
-            <input
-              type="text"
-              value={form.reference}
-              onChange={(e) => update('reference', e.target.value)}
-              maxLength={50}
-              className="input-field"
-              placeholder="Ex: VST-001"
-            />
+            <p className="font-overline text-pierre-500 mb-4">Détails</p>
+            <div className="card space-y-5">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="input-label">Prix</label>
+                  <input
+                    type="number"
+                    value={form.price}
+                    onChange={(e) => update('price', e.target.value)}
+                    min="0"
+                    step="100"
+                    className="input-field"
+                    placeholder="45000"
+                  />
+                </div>
+                <div>
+                  <label className="input-label">Couleur</label>
+                  <input
+                    type="text"
+                    value={form.color}
+                    onChange={(e) => update('color', e.target.value)}
+                    maxLength={50}
+                    className="input-field"
+                    placeholder="Beige"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="input-label">Référence</label>
+                <input
+                  type="text"
+                  value={form.reference}
+                  onChange={(e) => update('reference', e.target.value)}
+                  maxLength={50}
+                  className="input-field"
+                  placeholder="VST-001"
+                />
+              </div>
+            </div>
           </div>
 
+          {/* Actions */}
           <div className="flex items-center gap-3 pt-2">
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary flex-1"
+              className="btn-primary"
             >
-              {loading ? 'Création...' : 'Créer le modèle'}
+              {loading ? 'Enregistrement...' : 'Enregistrer la création'}
             </button>
-            <Link
-              to="/dashboard"
-              className="btn-secondary"
-            >
+            <Link to="/dashboard/models" className="btn-ghost">
               Annuler
             </Link>
           </div>
 
-          <p className="text-xs text-neutral-500 text-center pt-2">
-            Le modèle sera créé en <strong>brouillon</strong>. Vous pourrez
-            l'ajouter au catalogue et le publier ensuite.
+          <p className="text-xs text-pierre-400">
+            La création sera enregistrée en <strong>brouillon</strong>. Vous pourrez
+            l'ajouter au catalogue public et la publier ensuite.
           </p>
         </form>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   )
 }

@@ -1,15 +1,25 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../lib/api'
+import AdminLayout from '../../components/AdminLayout'
+import Spinner from '../../components/Spinner'
 
 interface Stats {
   stylists: number
   shops: number
   models: number
+  activeShops: number
+  suspendedShops: number
 }
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<Stats>({ stylists: 0, shops: 0, models: 0 })
+  const [stats, setStats] = useState<Stats>({
+    stylists: 0,
+    shops: 0,
+    models: 0,
+    activeShops: 0,
+    suspendedShops: 0,
+  })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -19,15 +29,19 @@ export default function AdminDashboard() {
           api.get('/admin/stylists'),
           api.get('/admin/shops'),
         ])
-        // Total approximatif (les deux endpoints sont paginés)
-        const totalModels = shops.data.data.reduce(
+
+        const shopsData = shops.data.data || []
+        const totalModels = shopsData.reduce(
           (sum: number, s: any) => sum + (s.models_count || 0),
           0
         )
+
         setStats({
           stylists: stylists.data.total ?? stylists.data.data.length,
-          shops: shops.data.total ?? shops.data.data.length,
+          shops: shops.data.total ?? shopsData.length,
           models: totalModels,
+          activeShops: shopsData.filter((s: any) => s.status === 'active').length,
+          suspendedShops: shopsData.filter((s: any) => s.status === 'suspended').length,
         })
       } finally {
         setLoading(false)
@@ -38,73 +52,106 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-neutral-500">Chargement...</div>
-      </div>
+      <AdminLayout>
+        <div className="py-20 flex justify-center">
+          <Spinner label="Chargement..." />
+        </div>
+      </AdminLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <header className="bg-white border-b border-neutral-200">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link to="/dashboard" className="text-neutral-500 hover:text-neutral-900">
-            ← Retour
-          </Link>
-          <h1 className="text-lg font-bold text-neutral-900">Administration</h1>
-        </div>
-      </header>
+    <AdminLayout
+      title="Vue d'ensemble"
+      subtitle="Pilotage de la plateforme SaaS Stylistes"
+    >
+      <div className="space-y-8">
 
-      <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-        {/* Statistiques */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="card text-center">
-            <p className="text-sm text-neutral-500 mb-1">Stylistes</p>
-            <p className="text-3xl font-bold text-neutral-900">{stats.stylists}</p>
+        {/* ===== STATS PRINCIPALES ===== */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="card">
+            <p className="font-overline text-pierre-500 mb-2">Stylistes</p>
+            <p className="text-4xl font-display text-noir">{stats.stylists}</p>
+            <p className="text-xs text-pierre-400 mt-1">comptes créés</p>
           </div>
-          <div className="card text-center">
-            <p className="text-sm text-neutral-500 mb-1">Boutiques</p>
-            <p className="text-3xl font-bold text-neutral-900">{stats.shops}</p>
+
+          <div className="card">
+            <p className="font-overline text-pierre-500 mb-2">Boutiques</p>
+            <p className="text-4xl font-display text-noir">{stats.shops}</p>
+            <p className="text-xs text-pierre-400 mt-1">au total</p>
           </div>
-          <div className="card text-center">
-            <p className="text-sm text-neutral-500 mb-1">Modèles publiés</p>
-            <p className="text-3xl font-bold text-neutral-900">{stats.models}</p>
+
+          <div className="card">
+            <p className="font-overline text-pierre-500 mb-2">Créations</p>
+            <p className="text-4xl font-display text-noir">{stats.models}</p>
+            <p className="text-xs text-pierre-400 mt-1">dans la plateforme</p>
+          </div>
+
+          <div className="card">
+            <p className="font-overline text-pierre-500 mb-2">Santé</p>
+            <p className="text-4xl font-display text-succes">
+              {stats.activeShops}
+            </p>
+            <p className="text-xs text-pierre-400 mt-1">
+              {stats.suspendedShops > 0
+                ? `${stats.suspendedShops} suspendue${stats.suspendedShops > 1 ? 's' : ''}`
+                : 'boutiques actives'}
+            </p>
           </div>
         </div>
 
-        {/* Navigation */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Link
-            to="/admin/categories"
-            className="card hover:shadow-md transition cursor-pointer"
-          >
-            <h3 className="font-bold text-neutral-900 mb-1">Catégories</h3>
-            <p className="text-sm text-neutral-500">
-              Gérer les catégories de modèles
-            </p>
-          </Link>
+        {/* ===== ACCÈS RAPIDES ===== */}
+        <div>
+          <p className="font-overline text-pierre-500 mb-4">Accès rapides</p>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <Link to="/admin/stylists" className="card card-hover group">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-beige-soft flex items-center justify-center">
+                  <svg className="w-5 h-5 text-brun" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                    <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                <span className="text-pierre-400 group-hover:text-noir transition">→</span>
+              </div>
+              <h3 className="font-display text-lg text-noir mb-1">Stylistes</h3>
+              <p className="text-sm text-pierre-500">
+                Gérer les comptes stylistes
+              </p>
+            </Link>
 
-          <Link
-            to="/admin/stylists"
-            className="card hover:shadow-md transition cursor-pointer"
-          >
-            <h3 className="font-bold text-neutral-900 mb-1">Stylistes</h3>
-            <p className="text-sm text-neutral-500">
-              Voir et gérer les comptes stylistes
-            </p>
-          </Link>
+            <Link to="/admin/shops" className="card card-hover group">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-beige-soft flex items-center justify-center">
+                  <svg className="w-5 h-5 text-brun" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                    <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                </div>
+                <span className="text-pierre-400 group-hover:text-noir transition">→</span>
+              </div>
+              <h3 className="font-display text-lg text-noir mb-1">Boutiques</h3>
+              <p className="text-sm text-pierre-500">
+                Modérer et superviser
+              </p>
+            </Link>
 
-          <Link
-            to="/admin/shops"
-            className="card hover:shadow-md transition cursor-pointer"
-          >
-            <h3 className="font-bold text-neutral-900 mb-1">Boutiques</h3>
-            <p className="text-sm text-neutral-500">
-              Voir et gérer les boutiques
-            </p>
-          </Link>
+            <Link to="/admin/categories" className="card card-hover group">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-beige-soft flex items-center justify-center">
+                  <svg className="w-5 h-5 text-brun" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                    <path d="M7 7h.01M7 3h5a1.99 1.99 0 011.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                </div>
+                <span className="text-pierre-400 group-hover:text-noir transition">→</span>
+              </div>
+              <h3 className="font-display text-lg text-noir mb-1">Catégories</h3>
+              <p className="text-sm text-pierre-500">
+                Organiser le catalogue global
+              </p>
+            </Link>
+          </div>
         </div>
-      </main>
-    </div>
+
+      </div>
+    </AdminLayout>
   )
 }

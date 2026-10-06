@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import AuthLayout from '../components/AuthLayout'
 
 export default function Register() {
   const navigate = useNavigate()
@@ -42,113 +43,132 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-neutral-900 mb-2">Créer un compte</h1>
-          <p className="text-neutral-600">Lancez votre boutique en quelques secondes</p>
+    <AuthLayout
+      title="Créez votre univers."
+      subtitle="Lancez votre boutique en quelques secondes. C'est gratuit."
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {error && (
+          <div className="p-4 rounded-[10px] bg-alerte-soft border border-alerte/20 text-alerte text-sm animate-fade-up">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="first_name" className="input-label">Prénom</label>
+            <input
+              id="first_name"
+              type="text"
+              value={form.first_name}
+              onChange={(e) => update('first_name', e.target.value)}
+              required
+              className="input-field"
+              placeholder="Olivier"
+            />
+          </div>
+          <div>
+            <label htmlFor="last_name" className="input-label">Nom</label>
+            <input
+              id="last_name"
+              type="text"
+              value={form.last_name}
+              onChange={(e) => update('last_name', e.target.value)}
+              required
+              className="input-field"
+              placeholder="Kouassi"
+            />
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="card space-y-4">
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
+        <div>
+          <label htmlFor="email" className="input-label">Adresse email</label>
+          <input
+            id="email"
+            type="email"
+            value={form.email}
+            onChange={(e) => update('email', e.target.value)}
+            required
+            className="input-field"
+            placeholder="vous@exemple.com"
+          />
+        </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Prénom</label>
-              <input
-                type="text"
-                value={form.first_name}
-                onChange={(e) => update('first_name', e.target.value)}
-                required
-                className="input-field"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Nom</label>
-              <input
-                type="text"
-                value={form.last_name}
-                onChange={(e) => update('last_name', e.target.value)}
-                required
-                className="input-field"
-              />
-            </div>
-          </div>
+        <div>
+          <label htmlFor="phone" className="input-label">
+            Téléphone <span className="text-pierre-400 font-normal">(optionnel)</span>
+          </label>
+          <input
+            id="phone"
+            type="tel"
+            value={form.phone}
+            onChange={(e) => update('phone', e.target.value)}
+            className="input-field"
+            placeholder="+229 97 00 00 00"
+          />
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => update('email', e.target.value)}
-              required
-              className="input-field"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Téléphone (optionnel)
-            </label>
-            <input
-              type="tel"
-              value={form.phone}
-              onChange={(e) => update('phone', e.target.value)}
-              className="input-field"
-              placeholder="+229 97 00 00 00"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Mot de passe
-            </label>
-            <input
-              type="password"
-              value={form.password}
-              onChange={(e) => update('password', e.target.value)}
-              required
-              minLength={12}
-              className="input-field"
-            />
-            <p className="text-xs text-neutral-500 mt-1">
-              12 caractères min, majuscule, minuscule, chiffre et caractère spécial.
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Confirmer le mot de passe
-            </label>
-            <input
-              type="password"
-              value={form.password_confirmation}
-              onChange={(e) => update('password_confirmation', e.target.value)}
-              required
-              className="input-field"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full"
-          >
-            {loading ? 'Création...' : 'Créer mon compte'}
-          </button>
-
-          <p className="text-center text-sm text-neutral-600">
-            Déjà un compte ?{' '}
-            <Link to="/login" className="text-neutral-900 font-medium hover:underline">
-              Se connecter
-            </Link>
+        <div>
+          <label htmlFor="password" className="input-label">Mot de passe</label>
+          <input
+            id="password"
+            type="password"
+            value={form.password}
+            onChange={(e) => update('password', e.target.value)}
+            required
+            minLength={12}
+            className="input-field"
+            placeholder="••••••••"
+          />
+          <p className="text-xs text-pierre-400 mt-1.5">
+            12 caractères min · majuscule · minuscule · chiffre · caractère spécial.
           </p>
-        </form>
-      </div>
-    </div>
+        </div>
+
+        <div>
+          <label htmlFor="password_confirmation" className="input-label">
+            Confirmer le mot de passe
+          </label>
+          <input
+            id="password_confirmation"
+            type="password"
+            value={form.password_confirmation}
+            onChange={(e) => update('password_confirmation', e.target.value)}
+            required
+            className="input-field"
+            placeholder="••••••••"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-primary w-full"
+        >
+          {loading ? (
+            <>
+              <span className="w-4 h-4 border-2 border-blanc-casse/30 border-t-blanc-casse rounded-full animate-spin" />
+              Création...
+            </>
+          ) : (
+            'Créer mon compte'
+          )}
+        </button>
+
+        <p className="text-center text-sm text-pierre-500 pt-2">
+          Déjà un compte ?{' '}
+          <Link to="/login" className="text-noir font-medium hover:underline underline-offset-4">
+            Se connecter
+          </Link>
+        </p>
+      </form>
+
+      <p className="text-xs text-pierre-400 text-center mt-8">
+        En créant un compte, vous acceptez nos{' '}
+        <a href="#" className="underline underline-offset-2 hover:text-noir">
+          conditions d'utilisation
+        </a>.
+      </p>
+    </AuthLayout>
   )
 }

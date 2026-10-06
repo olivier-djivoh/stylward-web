@@ -1,7 +1,7 @@
 import { FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { api } from '../lib/api'
+import AuthLayout from '../components/AuthLayout'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -17,7 +17,18 @@ export default function Login() {
     setLoading(true)
     try {
       await login(email, password)
-      navigate('/dashboard')
+
+      // Rediriger selon le rôle
+      // (on lit le rôle après login — il est dans le state)
+      setTimeout(() => {
+        const stored = localStorage.getItem('user')
+        if (stored) {
+          const u = JSON.parse(stored)
+          navigate(u.role === 'admin' ? '/admin' : '/dashboard')
+        } else {
+          navigate('/dashboard')
+        }
+      }, 0)
     } catch (err: any) {
       if (err.response?.data?.errors?.email) {
         setError(err.response.data.errors.email[0])
@@ -32,71 +43,88 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-neutral-900 mb-2">Connexion</h1>
-          <p className="text-neutral-600">Accédez à votre boutique</p>
+    <AuthLayout
+      title="Bon retour."
+      subtitle="Connectez-vous pour accéder à votre boutique."
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {error && (
+          <div className="p-4 rounded-[10px] bg-alerte-soft border border-alerte/20 text-alerte text-sm animate-fade-up">
+            {error}
+          </div>
+        )}
+
+        <div>
+          <label htmlFor="email" className="input-label">
+            Adresse email
+          </label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            className="input-field"
+            placeholder="vous@exemple.com"
+          />
         </div>
 
-        <form onSubmit={handleSubmit} className="card space-y-4">
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="input-field"
-              placeholder="olivier@demo.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
+        <div>
+          <div className="flex items-baseline justify-between mb-2">
+            <label htmlFor="password" className="text-sm font-medium text-pierre-700">
               Mot de passe
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="input-field"
-              placeholder="••••••••"
-            />
+            <a href="#" className="text-xs text-pierre-500 hover:text-noir transition">
+              Oublié ?
+            </a>
           </div>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+            className="input-field"
+            placeholder="••••••••"
+          />
+        </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full"
-          >
-            {loading ? 'Connexion...' : 'Se connecter'}
-          </button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-primary w-full"
+        >
+          {loading ? (
+            <>
+              <span className="w-4 h-4 border-2 border-blanc-casse/30 border-t-blanc-casse rounded-full animate-spin" />
+              Connexion...
+            </>
+          ) : (
+            'Se connecter'
+          )}
+        </button>
 
-          <p className="text-center text-sm text-neutral-600">
-            Pas de compte ?{' '}
-            <Link to="/register" className="text-neutral-900 font-medium hover:underline">
-              Créer une boutique
-            </Link>
-          </p>
-        </form>
+        <p className="text-center text-sm text-pierre-500 pt-2">
+          Pas encore de compte ?{' '}
+          <Link to="/register" className="text-noir font-medium hover:underline underline-offset-4">
+            Créer votre boutique
+          </Link>
+        </p>
+      </form>
 
-        <div className="mt-6 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
-          <strong>Comptes de test :</strong><br />
-          olivier@demo.com / MotDePasse123!<br />
-          fatou@demo.com / MotDePasse123!<br />
-          kofi@demo.com / MotDePasse123!
+      {/* Comptes de démo */}
+      <div className="mt-10 p-4 rounded-[10px] bg-ivoire border border-beige-soft">
+        <p className="text-[11px] uppercase tracking-wider font-semibold text-brun mb-2">
+          Comptes de démonstration
+        </p>
+        <div className="space-y-1 text-xs text-brun/80 font-mono">
+          <p>olivier@demo.com · MotDePasse123!</p>
+          <p>fatou@demo.com · MotDePasse123!</p>
+          <p>kofi@demo.com · MotDePasse123!</p>
         </div>
       </div>
-    </div>
+    </AuthLayout>
   )
 }

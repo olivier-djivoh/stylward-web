@@ -1,27 +1,239 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════
+   DESIGN SYSTEM — SaaS Stylistes
+   Palette : Noir + Ivoire + Beige + touches dorées
+   Typo    : Playfair Display (titres) + Inter (interface)
+   ═══════════════════════════════════════════════════════ */
+
+@theme {
+  /* ── Couleurs de marque ───────────────────────────── */
+  --color-noir: #171717;
+  --color-noir-soft: #2a2a2a;
+  --color-ivoire: #F7F4EE;
+  --color-blanc-casse: #FCFBF8;
+  --color-beige: #D8C7AE;
+  --color-beige-soft: #EAE0CE;
+  --color-brun: #5A4636;
+  --color-dore: #B08D57;
+
+  /* ── Neutres ──────────────────────────────────────── */
+  --color-pierre-50: #FAFAF9;
+  --color-pierre-100: #F5F4F1;
+  --color-pierre-200: #E7E5E0;
+  --color-pierre-300: #D6D3CD;
+  --color-pierre-400: #A8A29E;
+  --color-pierre-500: #78716C;
+  --color-pierre-600: #57534E;
+  --color-pierre-700: #44403C;
+  --color-pierre-800: #292524;
+  --color-pierre-900: #1C1917;
+
+  /* ── États ────────────────────────────────────────── */
+  --color-succes: #10B981;
+  --color-succes-soft: #D1FAE5;
+  --color-alerte: #DC2626;
+  --color-alerte-soft: #FEE2E2;
+  --color-info: #3B82F6;
+  --color-info-soft: #DBEAFE;
+
+  /* ── Typographies ─────────────────────────────────── */
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* ── Rayons ───────────────────────────────────────── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* ── Ombres (très discrètes) ──────────────────────── */
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.03), 0 1px 3px 0 rgb(0 0 0 / 0.04);
+  --shadow-elevated: 0 4px 12px -2px rgb(0 0 0 / 0.06), 0 2px 6px -2px rgb(0 0 0 / 0.04);
+  --shadow-modal: 0 20px 40px -12px rgb(0 0 0 / 0.15);
+}
+
+/* ═══════════════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════════════ */
+
 :root {
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.5;
+  font-family: var(--font-sans);
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   color-scheme: light;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: #fafafa;
-  color: #1a1a1a;
+  background-color: var(--color-blanc-casse);
+  color: var(--color-noir);
+  line-height: 1.6;
 }
 
 #root {
   min-height: 100vh;
 }
 
-/* Cache la scrollbar sur les barres de filtres horizontales */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+/* ═══════════════════════════════════════════════════════
+   TYPOGRAPHIE
+   ═══════════════════════════════════════════════════════ */
+
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--color-noir);
+  line-height: 1.15;
 }
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 1.875rem; }
+h3 { font-size: 1.375rem; }
+
+/* Classes utilitaires typographiques */
+.font-display {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.font-overline {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-pierre-500);
+}
+
+/* ═══════════════════════════════════════════════════════
+   COMPOSANTS DE BASE
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Boutons ──────────────────────────────────────── */
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2
+         bg-noir text-blanc-casse font-medium
+         px-5 py-2.5 rounded-[10px]
+         transition-all duration-200
+         hover:bg-noir-soft hover:shadow-elevated
+         active:scale-[0.98]
+         disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-none;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2
+         bg-transparent text-noir font-medium
+         px-5 py-2.5 rounded-[10px]
+         border border-pierre-300
+         transition-all duration-200
+         hover:bg-pierre-50 hover:border-pierre-400
+         active:scale-[0.98];
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center gap-2
+         text-pierre-600 font-medium
+         px-3 py-2 rounded-lg
+         transition-colors
+         hover:text-noir hover:bg-pierre-100;
+}
+
+.btn-accent {
+  @apply inline-flex items-center justify-center gap-2
+         bg-dore text-white font-medium
+         px-5 py-2.5 rounded-[10px]
+         transition-all duration-200
+         hover:opacity-90 hover:shadow-elevated
+         active:scale-[0.98];
+}
+
+/* ── Inputs ───────────────────────────────────────── */
+.input-field {
+  @apply w-full
+         bg-white text-noir
+         px-4 py-3
+         border border-pierre-200 rounded-[10px]
+         text-[15px]
+         placeholder:text-pierre-400
+         transition-all duration-150
+         focus:outline-none focus:border-noir focus:ring-2 focus:ring-noir/5;
+}
+
+.input-label {
+  @apply block text-sm font-medium text-pierre-700 mb-2;
+}
+
+/* ── Cards ────────────────────────────────────────── */
+.card {
+  @apply bg-white rounded-[16px]
+         border border-pierre-200
+         p-6
+         shadow-[var(--shadow-card)];
+}
+
+.card-hover {
+  @apply transition-all duration-200 hover:shadow-elevated hover:border-pierre-300;
+}
+
+/* ── Badges ───────────────────────────────────────── */
+.badge {
+  @apply inline-flex items-center gap-1
+         px-2.5 py-1 rounded-full
+         text-xs font-medium;
+}
+.badge-noir    { @apply bg-noir text-white; }
+.badge-beige   { @apply bg-beige-soft text-brun; }
+.badge-succes  { @apply bg-succes-soft text-succes; }
+.badge-alerte  { @apply bg-alerte-soft text-alerte; }
+.badge-neutre  { @apply bg-pierre-100 text-pierre-600; }
+
+/* ── Divider ──────────────────────────────────────── */
+.divider {
+  @apply border-t border-pierre-200;
+}
+
+/* ═══════════════════════════════════════════════════════
+   UTILITAIRES
+   ═══════════════════════════════════════════════════════ */
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Ligne décorative évoquant une couture (très subtile) */
+.stitch-line {
+  background-image: linear-gradient(
+    to right,
+    var(--color-pierre-300) 50%,
+    transparent 50%
+  );
+  background-size: 10px 1px;
+  background-repeat: repeat-x;
+  height: 1px;
+}
+
+/* Animation d'entrée douce */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+  animation: fade-up 0.4s ease-out;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SELECTION & FOCUS
+   ═══════════════════════════════════════════════════════ */
+
+::selection {
+  background-color: var(--color-noir);
+  color: var(--color-blanc-casse);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-noir);
+  outline-offset: 2px;
 }
