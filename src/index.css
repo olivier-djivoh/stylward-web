@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+
+/* Défilement fluide pour les ancres */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Compensation du header sticky lors du scroll vers une ancre */
+html {
+  scroll-padding-top: 68px;
+}
+
 /* ═══════════════════════════════════════════════════════
    DESIGN SYSTEM — SaaS Stylistes
    Palette : Noir + Ivoire + Beige + touches dorées

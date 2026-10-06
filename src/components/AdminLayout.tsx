@@ -1,6 +1,7 @@
 import { ReactNode, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import ScrollToTopButton from './ScrollToTopButton'
 
 interface Props {
   children: ReactNode
@@ -179,28 +180,62 @@ export default function AdminLayout({ children, title, subtitle, actions }: Prop
     </button>
   </div>
 
-  <nav className="flex-1 px-3 py-6 space-y-1">
-    {navItems.map((item) => (
-      <NavLink
-        key={item.to}
-        to={item.to}
-        end={item.to === '/admin'}
-        onClick={() => setMobileMenuOpen(false)}
-        className={({ isActive }) =>
-          `flex items-center gap-3 px-3 py-3 rounded-lg text-sm transition-all ${
-            isActive
-              ? 'bg-[#B08D57]/10 text-[#B08D57] font-medium'
-              : 'text-white/60 hover:text-white hover:bg-white/5'
-          }`
-        }
-      >
-        <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-          <path d={item.icon} />
-        </svg>
-        <span>{item.label}</span>
-      </NavLink>
-    ))}
-  </nav>
+  <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+  {navItems.map((item) => (
+    <NavLink
+      key={item.to}
+      to={item.to}
+      end={item.to === '/admin'}
+      onClick={() => setMobileMenuOpen(false)}
+      className={({ isActive }) =>
+        `flex items-center gap-3 px-3 py-3 rounded-lg text-sm transition-all ${
+          isActive
+            ? 'bg-[#B08D57]/10 text-[#B08D57] font-medium'
+            : 'text-white/60 hover:text-white hover:bg-white/5'
+        }`
+      }
+    >
+      <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+        <path d={item.icon} />
+      </svg>
+      <span>{item.label}</span>
+    </NavLink>
+  ))}
+</nav>
+
+{/* Section profil + déconnexion */}
+<div className="px-3 py-4 border-t border-white/5">
+  <div className="flex items-center gap-3 px-3 py-2 mb-2">
+    <div className="w-9 h-9 rounded-full bg-[#B08D57]/20 flex items-center justify-center shrink-0">
+      <span className="text-sm font-medium text-[#B08D57]">
+        {user?.first_name?.charAt(0).toUpperCase()}
+      </span>
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-medium text-white truncate">
+        {user?.first_name} {user?.last_name}
+      </p>
+      <p className="text-[11px] text-[#B08D57]/70 truncate">
+        Administrateur
+      </p>
+    </div>
+  </div>
+
+  <Link
+    to="/dashboard"
+    onClick={() => setMobileMenuOpen(false)}
+    className="block w-full text-center text-xs font-medium text-white/70 bg-white/5 hover:bg-white/10 rounded-lg py-2.5 transition mb-2"
+  >
+    ← Retour au studio
+  </Link>
+
+  <button
+    onClick={handleLogout}
+    className="w-full text-xs text-white/50 hover:text-white px-3 py-2 text-left transition"
+  >
+    Déconnexion
+  </button>
+</div>
 </aside>
         </div>
       )}
@@ -221,10 +256,12 @@ export default function AdminLayout({ children, title, subtitle, actions }: Prop
           </header>
         )}
 
-        <main className="max-w-6xl mx-auto px-4 sm:px-8 py-8 w-full overflow-x-hidden">
+                <main className="max-w-6xl mx-auto px-4 sm:px-8 py-8 w-full overflow-x-hidden">
           {children}
         </main>
       </div>
+
+      <ScrollToTopButton />
     </div>
   )
 }

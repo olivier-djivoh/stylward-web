@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../lib/api'
 import DashboardLayout from '../components/DashboardLayout'
@@ -52,6 +52,10 @@ interface ShopStats {
 export default function Dashboard() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
+  const [showDeletionBanner, setShowDeletionBanner] = useState(
+    searchParams.get('pendingDeletion') === '1'
+  )
   const [shop, setShop] = useState<Shop | null>(null)
   const [models, setModels] = useState<Model[]>([])
   const [stats, setStats] = useState<ShopStats | null>(null)
@@ -107,10 +111,47 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
-      {/* ====== SALUTATION ====== */}
+
+      {/* ═══ Bannière suppression ═══ */}
+      {showDeletionBanner && (
+        <div className="mb-6 p-4 rounded-2xl bg-alerte-soft border border-alerte/20">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-alerte mb-1">
+                ⚠️ Votre compte est en cours de suppression
+              </p>
+              <p className="text-xs text-pierre-600 leading-relaxed">
+                Votre boutique est désactivée et vos données seront supprimées
+                définitivement. Vous pouvez annuler à tout moment.
+              </p>
+            </div>
+            <button
+              onClick={async () => {
+                if (!confirm('Restaurer votre compte ?')) return
+                try {
+                  await api.post('/account/cancel-deletion')
+                  setShowDeletionBanner(false)
+                  window.location.reload()
+                } catch {
+                  alert('Erreur')
+                }
+              }}
+              className="btn-primary text-sm shrink-0"
+            >
+              Restaurer mon compte
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Salutation ═══ */}
       <div className="mb-10">
         <p className="font-overline text-pierre-500 mb-2">
-          {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+          {new Date().toLocaleDateString('fr-FR', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+          })}
         </p>
         <h1 className="font-display text-4xl text-noir">
           Bonjour {user?.first_name} 👋
@@ -122,7 +163,7 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* ====== CAS 1 : PAS DE BOUTIQUE ====== */}
+      {/* ═══ Cas 1 : pas de boutique ═══ */}
       {!shop && (
         <div className="card max-w-xl">
           <h2 className="font-display text-2xl text-noir mb-3">
@@ -138,13 +179,14 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ====== CAS 2 : BOUTIQUE EXISTANTE ====== */}
+      {/* ═══ Cas 2 : boutique existante ═══ */}
       {shop && (
         <div className="space-y-8">
 
-          {/* Raccourcis principaux */}
+          {/* Raccourcis */}
           <div className="grid sm:grid-cols-2 gap-4">
-            {/* Boutique card */}
+
+            {/* Carte boutique */}
             <div className="card relative overflow-hidden">
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -176,7 +218,9 @@ export default function Dashboard() {
                     <button
                       type="button"
                       onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/shops/${shop.slug}`)
+                        navigator.clipboard.writeText(
+                          `${window.location.origin}/shops/${shop.slug}`
+                        )
                         alert('Lien copié !')
                       }}
                       className="btn-primary text-sm flex-1"
@@ -185,7 +229,10 @@ export default function Dashboard() {
                     </button>
                   </>
                 ) : (
-                  <button onClick={handleActivate} className="btn-primary text-sm w-full">
+                  <button
+                    onClick={handleActivate}
+                    className="btn-primary text-sm w-full"
+                  >
                     Activer la boutique
                   </button>
                 )}
@@ -211,9 +258,7 @@ export default function Dashboard() {
                 </div>
                 <div className="card">
                   <p className="font-overline text-pierre-500 mb-2">Créations</p>
-                  <p className="text-3xl font-display text-noir">
-                    {models.length}
-                  </p>
+                  <p className="text-3xl font-display text-noir">{models.length}</p>
                   <p className="text-xs text-pierre-400 mt-1">
                     {publishedCount} publiée{publishedCount > 1 ? 's' : ''}
                   </p>
@@ -247,7 +292,10 @@ export default function Dashboard() {
 
               <div className="flex items-end justify-between gap-2 h-32">
                 {stats.daily_views.map((day) => {
-                  const max = Math.max(...stats.daily_views.map((d) => d.count), 1)
+                  const max = Math.max(
+                    ...stats.daily_views.map((d) => d.count),
+                    1
+                  )
                   const height = (day.count / max) * 100
                   return (
                     <div key={day.date} className="flex-1 flex flex-col items-center gap-2">
@@ -301,7 +349,7 @@ export default function Dashboard() {
                 {recentModels.map((model) => (
                   <Link
                     key={model.id}
-                    to="/dashboard/models"
+                    to={`/dashboard/models/${model.id}`}
                     className="group"
                   >
                     <div className="aspect-[3/4] bg-pierre-100 rounded-xl overflow-hidden relative">
@@ -363,6 +411,7 @@ export default function Dashboard() {
 
         </div>
       )}
+
     </DashboardLayout>
   )
 }

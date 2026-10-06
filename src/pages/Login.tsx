@@ -12,35 +12,40 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-    try {
-      await login(email, password)
+  e.preventDefault()
+  setError('')
+  setLoading(true)
+  try {
+    const result = await login(email, password)
 
-      // Rediriger selon le rôle
-      // (on lit le rôle après login — il est dans le state)
-      setTimeout(() => {
-        const stored = localStorage.getItem('user')
-        if (stored) {
-          const u = JSON.parse(stored)
-          navigate(u.role === 'admin' ? '/admin' : '/dashboard')
-        } else {
-          navigate('/dashboard')
-        }
-      }, 0)
-    } catch (err: any) {
-      if (err.response?.data?.errors?.email) {
-        setError(err.response.data.errors.email[0])
-      } else if (err.response?.data?.message) {
-        setError(err.response.data.message)
-      } else {
-        setError('Une erreur est survenue')
-      }
-    } finally {
-      setLoading(false)
+    // Rediriger selon le rôle
+    const stored = localStorage.getItem('user')
+    if (stored) {
+      const u = JSON.parse(stored)
+      const isAdmin = u.role === 'admin'
+
+      // Si suppression en cours → on ajoute le flag à l'URL
+      const base = isAdmin ? '/admin' : '/dashboard'
+      const url = result?.pendingDeletion ? `${base}?pendingDeletion=1` : base
+
+      navigate(url)
+      return
     }
+
+    // Fallback (ne devrait pas arriver)
+    navigate('/dashboard')
+  } catch (err: any) {
+    if (err.response?.data?.errors?.email) {
+      setError(err.response.data.errors.email[0])
+    } else if (err.response?.data?.message) {
+      setError(err.response.data.message)
+    } else {
+      setError('Une erreur est survenue')
+    }
+  } finally {
+    setLoading(false)
   }
+}
 
   return (
     <AuthLayout

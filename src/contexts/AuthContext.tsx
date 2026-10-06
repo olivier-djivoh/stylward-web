@@ -64,12 +64,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   async function login(email: string, password: string) {
-    const { data } = await api.post('/login', { email, password })
-    localStorage.setItem('token', data.token)
-    localStorage.setItem('user', JSON.stringify(data.user))
-    setToken(data.token)
-    setUser(data.user)
+  const { data } = await api.post('/login', { email, password })
+  localStorage.setItem('token', data.token)
+  localStorage.setItem('user', JSON.stringify(data.user))
+  setToken(data.token)
+  setUser(data.user)
+
+  return {
+    pendingDeletion: data.pending_deletion ?? false,
+    deletionDueAt: data.deletion_due_at ?? null,
+    daysUntilDeletion: data.days_until_deletion ?? null,
   }
+}
 
   async function register(formData: RegisterData) {
     const { data } = await api.post('/register', formData)

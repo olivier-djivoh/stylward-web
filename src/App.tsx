@@ -16,10 +16,16 @@ import AdminDashboard from './pages/admin/Dashboard'
 import AdminCategories from './pages/admin/Categories'
 import AdminStylists from './pages/admin/Stylists'
 import AdminShops from './pages/admin/Shops'
-
+import ScrollToTop from './components/ScrollToTop'
+import Landing from './pages/Landing'
+import Onboarding from './pages/Onboarding'
+import ModelDetail from './pages/ModelDetail'
+import Settings from './pages/Settings'
+import ConfirmDeletion from './pages/ConfirmDeletion'
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <Routes>
           {/* ─── Routes publiques ─── */}
@@ -29,13 +35,20 @@ function App() {
           {/* ─── Auth ─── */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/account/deletion/confirm/:token" element={<ConfirmDeletion />} />
 
           {/* ─── Dashboard styliste (protégé) ─── */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/dashboard/models" element={<ProtectedRoute><Models /></ProtectedRoute>} />
           <Route path="/dashboard/models/new" element={<ProtectedRoute><CreateModel /></ProtectedRoute>} />
+          <Route path="/dashboard/models/:id" element=
+          {<ProtectedRoute><ModelDetail /></ProtectedRoute>}/>
           <Route path="/dashboard/shop" element={<ProtectedRoute><ShopPage /></ProtectedRoute>} />
           <Route path="/dashboard/shop/new" element={<ProtectedRoute><CreateShop /></ProtectedRoute>} />
+          <Route path="/onboarding"element=
+          {<ProtectedRoute><Onboarding /></ProtectedRoute>}/>
+          <Route path="/dashboard/settings"element=
+          {<ProtectedRoute><Settings /></ProtectedRoute>}/>
 
           {/* ─── Admin SaaS (protégé + rôle admin) ─── */}
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
@@ -44,7 +57,7 @@ function App() {
           <Route path="/admin/shops" element={<AdminRoute><AdminShops /></AdminRoute>} />
 
           {/* ─── Racine & 404 ─── */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<Landing />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>

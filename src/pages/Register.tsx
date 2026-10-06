@@ -27,7 +27,7 @@ export default function Register() {
     setLoading(true)
     try {
       await register(form)
-      navigate('/dashboard')
+navigate('/onboarding')
     } catch (err: any) {
       if (err.response?.data?.errors) {
         const firstError = Object.values(err.response.data.errors)[0]

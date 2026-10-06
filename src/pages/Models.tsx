@@ -170,14 +170,17 @@ export default function Models() {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
               {filtered.map((model) => (
-                <div key={model.id} className="group">
-                  {/* Image */}
+                <Link
+                  key={model.id}
+                  to={`/dashboard/models/${model.id}`}
+                  className="group block"
+                >
                   <div className="aspect-[3/4] bg-pierre-100 rounded-xl overflow-hidden relative">
                     {model.images?.[0] ? (
                       <img
                         src={`/storage/${model.images[0].path}`}
                         alt={model.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-pierre-300 text-xs">
@@ -185,65 +188,28 @@ export default function Models() {
                       </div>
                     )}
 
-                    {model.status === 'published' && (
+                    {model.status === 'published' ? (
                       <span className="absolute top-2 left-2 badge badge-succes text-[10px] py-0.5">
                         En ligne
                       </span>
-                    )}
-                    {model.status !== 'published' && (
+                    ) : (
                       <span className="absolute top-2 left-2 badge badge-neutre text-[10px] py-0.5">
                         Brouillon
                       </span>
                     )}
                   </div>
 
-                  {/* Infos */}
-                  <div className="mt-3 space-y-2">
-                    <div>
-                      <p className="text-sm font-medium text-noir truncate">
-                        {model.name}
+                  <div className="mt-3 space-y-1">
+                    <p className="font-medium text-noir text-sm truncate group-hover:text-brun transition-colors">
+                      {model.name}
+                    </p>
+                    {model.price && (
+                      <p className="text-xs text-pierre-500">
+                        {Number(model.price).toLocaleString('fr-FR')} {model.currency}
                       </p>
-                      {model.price && (
-                        <p className="text-xs text-pierre-500 mt-0.5">
-                          {Number(model.price).toLocaleString('fr-FR')}{' '}
-                          {model.currency}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex flex-col gap-1.5 pt-1">
-                      <ImageUploader
-                        modelId={model.id}
-                        onUploaded={(img) => handleImageUploaded(model.id, img)}
-                      />
-                      {model.status === 'published' ? (
-                        <button
-                          type="button"
-                          onClick={() => handleUnpublish(model.id)}
-                          className="text-left text-xs text-pierre-500 hover:text-noir transition"
-                        >
-                          Dépublier
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => handlePublish(model.id)}
-                          className="text-left text-xs text-succes hover:opacity-80 font-medium transition"
-                        >
-                          Publier
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(model.id, model.name)}
-                        className="text-left text-xs text-pierre-400 hover:text-alerte transition"
-                      >
-                        Supprimer
-                      </button>
-                    </div>
+                    )}
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
