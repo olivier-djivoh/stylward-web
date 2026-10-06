@@ -1,7 +1,10 @@
-import { useEffect, useState } from 'react'
+
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import Spinner from '../components/Spinner'
+import { useEffect, useRef, useState } from 'react'
+import { track } from '../lib/tracker'
+
 interface Shop {
   id: string
   name: string
@@ -32,25 +35,33 @@ export default function PublicShop() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const trackedRef = useRef(false)
 
   useEffect(() => {
-    async function load() {
-      if (!slug) return
-      try {
-        const [shopRes, modelsRes] = await Promise.all([
-          api.get(`/public/shops/${slug}`),
-          api.get(`/public/shops/${slug}/models`),
-        ])
-        setShop(shopRes.data)
-        setModels(modelsRes.data.data || [])
-      } catch {
-        setError('Boutique introuvable')
-      } finally {
-        setLoading(false)
+  async function load() {
+    if (!slug) return
+    try {
+      const [shopRes, modelsRes] = await Promise.all([
+        api.get(`/public/shops/${slug}`),
+        api.get(`/public/shops/${slug}/models`),
+      ])
+      setShop(shopRes.data)
+      setModels(modelsRes.data.data || [])
+
+      // Tracking : 1 seule fois par montage (StrictMode-safe)
+      if (!trackedRef.current) {
+        trackedRef.current = true
+        track(slug, 'view_shop')
       }
+    } catch (err) {
+      console.error('Erreur chargement boutique :', err)
+      setError('Boutique introuvable')
+    } finally {
+      setLoading(false)
     }
-    load()
-  }, [slug])
+  }
+  load()
+}, [slug])
 
   const categories = Array.from(
     new Map(

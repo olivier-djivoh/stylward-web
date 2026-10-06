@@ -1,7 +1,10 @@
-import { useEffect, useState } from 'react'
+
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import Spinner from '../components/Spinner'
+import { track } from '../lib/tracker'
+import { useEffect, useRef, useState } from 'react'
+
 
 interface Shop {
   id: string
@@ -29,25 +32,33 @@ export default function PublicModel() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [activeImage, setActiveImage] = useState(0)
+  const trackedRef = useRef(false)
 
   useEffect(() => {
-    async function load() {
-      if (!slug || !modelId) return
-      try {
-        const [shopRes, modelRes] = await Promise.all([
-          api.get(`/public/shops/${slug}`),
-          api.get(`/public/shops/${slug}/models/${modelId}`),
-        ])
-        setShop(shopRes.data)
-        setModel(modelRes.data.data)
-      } catch {
-        setError('Modèle introuvable')
-      } finally {
-        setLoading(false)
+  async function load() {
+    if (!slug || !modelId) return
+    try {
+      const [shopRes, modelRes] = await Promise.all([
+        api.get(`/public/shops/${slug}`),
+        api.get(`/public/shops/${slug}/models/${modelId}`),
+      ])
+      setShop(shopRes.data)
+      setModel(modelRes.data.data)
+
+      // Tracking : 1 seule fois par montage (StrictMode-safe)
+      if (!trackedRef.current) {
+        trackedRef.current = true
+        track(slug, 'view_model', modelRes.data.data.id)
       }
+    } catch (err) {
+      console.error('Erreur chargement modèle :', err)
+      setError('Modèle introuvable')
+    } finally {
+      setLoading(false)
     }
-    load()
-  }, [slug, modelId])
+  }
+  load()
+}, [slug, modelId])
 
   if (loading) {
     return <Spinner fullScreen label="Chargement du modèle..." />
@@ -80,6 +91,12 @@ export default function PublicModel() {
     const phone = shop.whatsapp.replace(/[^\d]/g, '')
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
   }
+
+  function handleWhatsAppClick() {
+  if (slug && model) {
+    track(slug, 'whatsapp_click', model.id)
+  }
+}
 
   const hasImages = model.images && model.images.length > 0
 
@@ -212,6 +229,7 @@ export default function PublicModel() {
               <div className="space-y-3">
                 <a
                   href={whatsappLink()}
+                  onClick={handleWhatsAppClick}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-3 w-full py-4 px-6 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-2xl transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
