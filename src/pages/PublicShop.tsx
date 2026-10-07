@@ -4,6 +4,8 @@ import { api } from '../lib/api'
 import { track } from '../lib/tracker'
 import Spinner from '../components/Spinner'
 import ScrollToTopButton from '../components/ScrollToTopButton'
+import FavoriteButton from '../components/FavoriteButton'
+import { getFavoritesByShop, onFavoritesChanged } from '../lib/favorites'
 
 interface Shop {
   id: string
@@ -23,6 +25,7 @@ interface Model {
   price: string | null
   currency: string
   color: string | null
+  reference: string | null
   status: string
   published_at: string | null
   category: { id: string; name: string; slug: string } | null
@@ -39,6 +42,20 @@ export default function PublicShop() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const trackedRef = useRef(false)
+
+  const [favoritesCount, setFavoritesCount] = useState(0)
+
+useEffect(() => {
+  if (!slug) return
+  function update() {
+    setFavoritesCount(getFavoritesByShop(slug!).length)
+  }
+  update()
+  const unsubscribe = onFavoritesChanged(update)
+  return () => {
+    unsubscribe()
+  }
+}, [slug])
 
   useEffect(() => {
     async function load() {
@@ -163,16 +180,35 @@ export default function PublicShop() {
             </span>
           </Link>
 
-          {whatsappNumber && (
-            <a
-              href={`https://wa.me/${whatsappNumber}?text=${waMessage}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 hover:text-neutral-900 transition-colors shrink-0 ml-4 font-medium"
-            >
-              Contacter
-            </a>
-          )}
+          <div className="flex items-center gap-2 shrink-0 ml-4">
+  {/* Favoris */}
+  {favoritesCount > 0 && (
+    <Link
+      to={`/shops/${shop.slug}/favorites`}
+      className="relative p-2 text-pierre-500 hover:text-noir transition-colors"
+      aria-label="Mes favoris"
+    >
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+        <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+      </svg>
+      <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-noir text-blanc-casse text-[9px] font-bold flex items-center justify-center">
+        {favoritesCount}
+      </span>
+    </Link>
+  )}
+
+            {/* Contacter WhatsApp */}
+            {whatsappNumber && (
+              <a
+                href={`https://wa.me/${whatsappNumber}?text=${waMessage}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] uppercase tracking-[0.22em] text-neutral-500 hover:text-neutral-900 transition-colors font-medium"
+              >
+                Contacter
+              </a>
+            )}
+          </div>
         </div>
       </nav>
 
@@ -399,6 +435,16 @@ export default function PublicShop() {
                       Nouveau
                     </span>
                   )}
+
+                  {/* ← AJOUT */}
+                    <FavoriteButton
+                      shopSlug={shop.slug}
+                      modelId={model.id}
+                      name={model.name}
+                      image={model.images?.[0]?.path ?? null}
+                      price={model.price}
+                      currency={model.currency}
+                    />
 
                   {/* Overlay discret au survol (desktop) */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 hidden sm:flex items-end justify-center pb-5">

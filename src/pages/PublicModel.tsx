@@ -4,6 +4,7 @@ import { api } from '../lib/api'
 import { track } from '../lib/tracker'
 import Spinner from '../components/Spinner'
 import ScrollToTopButton from '../components/ScrollToTopButton'
+import FavoriteButton from '../components/FavoriteButton'
 
 interface Shop {
   id: string
@@ -273,6 +274,16 @@ export default function PublicModel() {
                 )}
               </div>
             )}
+
+            <FavoriteButton
+                shopSlug={shop.slug}
+                modelId={model.id}
+                name={model.name}
+                image={model.images?.[0]?.path ?? null}
+                price={model.price}
+                currency={model.currency}
+                variant="page"
+              />
 
             {/* CTA WhatsApp */}
             {whatsappNumber ? (

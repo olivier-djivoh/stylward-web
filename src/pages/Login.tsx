@@ -16,21 +16,21 @@ export default function Login() {
   setError('')
   setLoading(true)
   try {
-    const result = await login(email, password)
 
     // Rediriger selon le rôle
-    const stored = localStorage.getItem('user')
-    if (stored) {
-      const u = JSON.parse(stored)
-      const isAdmin = u.role === 'admin'
+    const result: any = await login(email, password)
 
-      // Si suppression en cours → on ajoute le flag à l'URL
-      const base = isAdmin ? '/admin' : '/dashboard'
-      const url = result?.pendingDeletion ? `${base}?pendingDeletion=1` : base
+const stored = localStorage.getItem('user')
+if (stored) {
+  const u = JSON.parse(stored)
+  const isAdmin = u.role === 'admin'
 
-      navigate(url)
-      return
-    }
+  const base = isAdmin ? '/admin' : '/dashboard'
+  const url = result?.pendingDeletion ? `${base}?pendingDeletion=1` : base
+
+  navigate(url)
+  return
+}
 
     // Fallback (ne devrait pas arriver)
     navigate('/dashboard')

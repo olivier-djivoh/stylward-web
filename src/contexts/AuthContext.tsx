@@ -15,7 +15,11 @@ interface AuthContextType {
   user: User | null
   token: string | null
   loading: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<{
+  pendingDeletion: boolean
+  deletionDueAt: string | null
+  daysUntilDeletion: number | null
+} | void>
   register: (data: RegisterData) => Promise<void>
   logout: () => Promise<void>
 }

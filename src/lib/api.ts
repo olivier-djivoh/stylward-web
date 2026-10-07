@@ -28,10 +28,17 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      // Redirige vers login sauf si on y est déjà
-      if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+      const currentPath = window.location.pathname
+
+      // On ne redirige PAS sur ces pages :
+      // - login / register : déjà en train de se connecter
+      // - account/deletion/confirm/... : page publique de confirmation
+      const isAuthPage = currentPath === '/login' || currentPath === '/register'
+      const isConfirmPage = currentPath.startsWith('/account/deletion/confirm/')
+
+      if (!isAuthPage && !isConfirmPage) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
         window.location.href = '/login'
       }
     }

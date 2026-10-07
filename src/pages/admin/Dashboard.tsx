@@ -103,7 +103,7 @@ export default function AdminDashboard() {
         {/* ===== ACCÈS RAPIDES ===== */}
         <div>
           <p className="font-overline text-pierre-500 mb-4">Accès rapides</p>
-          <div className="grid sm:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-4 gap-4">
             <Link to="/admin/stylists" className="card card-hover group">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-lg bg-beige-soft flex items-center justify-center">
@@ -146,6 +146,21 @@ export default function AdminDashboard() {
               <h3 className="font-display text-lg text-noir mb-1">Catégories</h3>
               <p className="text-sm text-pierre-500">
                 Organiser le catalogue global
+              </p>
+            </Link>
+
+            <Link to="/admin/archives" className="card card-hover group">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-beige-soft flex items-center justify-center">
+                  <svg className="w-5 h-5 text-brun" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                    <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                  </svg>
+                </div>
+                <span className="text-pierre-400 group-hover:text-noir transition">→</span>
+              </div>
+              <h3 className="font-display text-lg text-noir mb-1">Archives</h3>
+              <p className="text-sm text-pierre-500">
+                Comptes supprimés
               </p>
             </Link>
           </div>

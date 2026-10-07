@@ -13,7 +13,7 @@ interface Shop {
     first_name: string
     last_name: string
     email: string
-  }
+  } | null
 }
 
 export default function AdminShops() {
@@ -121,7 +121,11 @@ export default function AdminShops() {
                       /shops/{s.slug}
                     </p>
                     <div className="flex items-center gap-3 mt-1 text-xs text-pierre-400">
-                      <span>{s.user.first_name} {s.user.last_name}</span>
+                      <span>
+                        {s.user
+                          ? `${s.user.first_name} ${s.user.last_name}`
+                          : 'Sans propriétaire'}
+                      </span>
                       <span>·</span>
                       <span>{s.models_count} création{s.models_count > 1 ? 's' : ''}</span>
                     </div>

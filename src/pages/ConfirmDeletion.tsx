@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import Spinner from '../components/Spinner'
@@ -7,14 +7,24 @@ export default function ConfirmDeletion() {
   const { token } = useParams<{ token: string }>()
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [message, setMessage] = useState('')
+  const calledRef = useRef(false)
 
   useEffect(() => {
     async function confirm() {
       if (!token) return
+
+      // 🔒 Bloque le double appel (StrictMode)
+      if (calledRef.current) return
+      calledRef.current = true
+
       try {
         const { data } = await api.post(`/account/confirm-deletion/${token}`)
         setMessage(data.message || 'Votre compte sera supprimé dans 30 jours.')
         setStatus('success')
+
+        // Nettoie le token local (l'utilisateur est déconnecté côté serveur)
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
       } catch (err: any) {
         setMessage(err.response?.data?.message || 'Lien invalide ou expiré.')
         setStatus('error')
@@ -38,9 +48,13 @@ export default function ConfirmDeletion() {
               </svg>
             </div>
             <p className="font-overline text-succes mb-3">Confirmé</p>
-            <h1 className="font-serif text-3xl text-noir mb-4">Suppression programmée</h1>
+            <h1 className="font-serif text-3xl text-noir mb-4">
+              Suppression programmée
+            </h1>
             <p className="text-pierre-600 leading-relaxed mb-8">{message}</p>
-            <Link to="/login" className="btn-primary inline-block">Retour à la connexion</Link>
+            <Link to="/login" className="btn-primary inline-block">
+              Retour à la connexion
+            </Link>
           </>
         ) : (
           <>
@@ -52,7 +66,9 @@ export default function ConfirmDeletion() {
             <p className="font-overline text-alerte mb-3">Erreur</p>
             <h1 className="font-serif text-3xl text-noir mb-4">Lien invalide</h1>
             <p className="text-pierre-600 leading-relaxed mb-8">{message}</p>
-            <Link to="/" className="btn-secondary inline-block">Retour à l'accueil</Link>
+            <Link to="/" className="btn-secondary inline-block">
+              Retour à l'accueil
+            </Link>
           </>
         )}
       </div>

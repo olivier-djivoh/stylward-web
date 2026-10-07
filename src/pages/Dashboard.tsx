@@ -60,27 +60,29 @@ export default function Dashboard() {
   const [models, setModels] = useState<Model[]>([])
   const [stats, setStats] = useState<ShopStats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [restoredMessage, setRestoredMessage] = useState(false)
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const shopRes = await api.get('/shop').catch(() => ({ data: null }))
-        setShop(shopRes.data)
+  async function loadData() {
+  try {
+    const shopRes = await api.get('/shop').catch(() => ({ data: null }))
+    setShop(shopRes.data)
 
-        if (shopRes.data) {
-          const [modelsRes, statsRes] = await Promise.all([
-            api.get('/models').catch(() => ({ data: { data: [] } })),
-            api.get('/shop/stats').catch(() => ({ data: null })),
-          ])
-          setModels(modelsRes.data.data || [])
-          setStats(statsRes.data)
-        }
-      } finally {
-        setLoading(false)
-      }
+    if (shopRes.data) {
+      const [modelsRes, statsRes] = await Promise.all([
+        api.get('/models').catch(() => ({ data: { data: [] } })),
+        api.get('/shop/stats').catch(() => ({ data: null })),
+      ])
+      setModels(modelsRes.data.data || [])
+      setStats(statsRes.data)
     }
-    load()
-  }, [])
+  } finally {
+    setLoading(false)
+  }
+}
+
+useEffect(() => {
+  loadData()
+}, [])
 
   async function handleActivate() {
     try {
@@ -112,6 +114,15 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
 
+      {/* ═══ Message de restauration ═══ */}
+    {restoredMessage && (
+      <div className="mb-6 p-4 rounded-2xl bg-succes-soft border border-succes/20">
+        <p className="text-sm font-medium text-succes">
+          ✅ Votre compte a été restauré. Votre boutique est de nouveau en ligne.
+        </p>
+      </div>
+    )}
+
       {/* ═══ Bannière suppression ═══ */}
       {showDeletionBanner && (
         <div className="mb-6 p-4 rounded-2xl bg-alerte-soft border border-alerte/20">
@@ -126,20 +137,26 @@ export default function Dashboard() {
               </p>
             </div>
             <button
-              onClick={async () => {
-                if (!confirm('Restaurer votre compte ?')) return
-                try {
-                  await api.post('/account/cancel-deletion')
-                  setShowDeletionBanner(false)
-                  window.location.reload()
-                } catch {
-                  alert('Erreur')
-                }
-              }}
-              className="btn-primary text-sm shrink-0"
-            >
-              Restaurer mon compte
-            </button>
+                onClick={async () => {
+                  if (!confirm('Restaurer votre compte ?')) return
+                  try {
+                    await api.post('/account/cancel-deletion')
+                    setShowDeletionBanner(false)
+                    setRestoredMessage(true)
+                    navigate('/dashboard', { replace: true })
+
+                    // Recharge les données de la boutique
+                    await loadData()
+
+                    setTimeout(() => setRestoredMessage(false), 5000)
+                  } catch {
+                    alert('Erreur')
+                  }
+                }}
+                className="btn-primary text-sm shrink-0"
+              >
+                Restaurer mon compte
+              </button>
           </div>
         </div>
       )}

@@ -1,7 +1,10 @@
-import { ReactNode, useState } from 'react'
+import { useEffect,ReactNode, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import ScrollToTopButton from './ScrollToTopButton'
+import NotificationBell from './NotificationBell'
+import { api } from '../lib/api'
+import { onNotificationsChanged } from '../lib/notifications'
 
 interface Props {
   children: ReactNode
@@ -14,6 +17,25 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+  async function fetchCount() {
+    try {
+      const { data } = await api.get('/notifications/unread-count')
+      setUnreadCount(data.count)
+    } catch {}
+  }
+  fetchCount()
+
+  const interval = setInterval(fetchCount, 30000)
+  const unsubscribe = onNotificationsChanged(fetchCount)
+
+  return () => {
+    clearInterval(interval)
+    unsubscribe()
+  }
+}, [])
 
   async function handleLogout() {
     await logout()
@@ -101,6 +123,26 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
           </div>
         )}
 
+        {/* Notifications desktop */}
+          <div className="px-3 pb-3">
+            <Link
+              to="/dashboard/notifications"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-blanc-casse/60 hover:text-blanc-casse hover:bg-white/5 transition-all"
+            >
+              <svg className="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <span className="flex-1">Notifications</span>
+
+              {/* Badge rouge */}
+              {unreadCount > 0 && (
+                <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-alerte text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </Link>
+          </div>
+
         {/* Profil */}
         <div className="px-3 py-4 border-t border-white/5">
           <div className="flex items-center gap-3 px-3 py-2">
@@ -144,7 +186,7 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
               <span className="font-serif text-lg text-blanc-casse leading-none pt-0.5">S</span>
             </div>
           </Link>
-          <div className="w-8" />
+          <NotificationBell />
         </div>
       </header>
 

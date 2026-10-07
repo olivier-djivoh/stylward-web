@@ -22,15 +22,21 @@ import Onboarding from './pages/Onboarding'
 import ModelDetail from './pages/ModelDetail'
 import Settings from './pages/Settings'
 import ConfirmDeletion from './pages/ConfirmDeletion'
+import AdminArchives from './pages/admin/Archives'
+import Notifications from './pages/Notifications'
+import ShopFavorites from './pages/ShopFavorites'
+import InstallPWA from './components/InstallPWA'
 function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
       <AuthProvider>
+        <InstallPWA />
         <Routes>
           {/* ─── Routes publiques ─── */}
           <Route path="/shops/:slug/models/:modelId" element={<PublicModel />} />
           <Route path="/shops/:slug" element={<PublicShop />} />
+          <Route path="/shops/:slug/favorites" element={<ShopFavorites />} />
 
           {/* ─── Auth ─── */}
           <Route path="/login" element={<Login />} />
@@ -49,8 +55,11 @@ function App() {
           {<ProtectedRoute><Onboarding /></ProtectedRoute>}/>
           <Route path="/dashboard/settings"element=
           {<ProtectedRoute><Settings /></ProtectedRoute>}/>
+          <Route path="/dashboard/notifications"element=
+          {<ProtectedRoute><Notifications /></ProtectedRoute>}/>
 
           {/* ─── Admin SaaS (protégé + rôle admin) ─── */}
+          <Route path="/admin/archives" element={<AdminRoute><AdminArchives /></AdminRoute>} />
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
           <Route path="/admin/stylists" element={<AdminRoute><AdminStylists /></AdminRoute>} />
