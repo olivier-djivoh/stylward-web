@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-
 /* Défilement fluide pour les ancres */
 html {
   scroll-behavior: smooth;
@@ -12,7 +11,7 @@ html {
 }
 
 /* ═══════════════════════════════════════════════════════
-   DESIGN SYSTEM — SaaS Stylistes
+   DESIGN SYSTEM — Stylward
    Palette : Noir + Ivoire + Beige + touches dorées
    Typo    : Playfair Display (titres) + Inter (interface)
    ═══════════════════════════════════════════════════════ */
@@ -21,36 +20,36 @@ html {
   /* ── Couleurs de marque ───────────────────────────── */
   --color-noir: #171717;
   --color-noir-soft: #2a2a2a;
-  --color-ivoire: #F7F4EE;
-  --color-blanc-casse: #FCFBF8;
-  --color-beige: #D8C7AE;
-  --color-beige-soft: #EAE0CE;
-  --color-brun: #5A4636;
-  --color-dore: #B08D57;
+  --color-ivoire: #f7f4ee;
+  --color-blanc-casse: #fcfbf8;
+  --color-beige: #d8c7ae;
+  --color-beige-soft: #eae0ce;
+  --color-brun: #5a4636;
+  --color-dore: #b08d57;
 
   /* ── Neutres ──────────────────────────────────────── */
-  --color-pierre-50: #FAFAF9;
-  --color-pierre-100: #F5F4F1;
-  --color-pierre-200: #E7E5E0;
-  --color-pierre-300: #D6D3CD;
-  --color-pierre-400: #A8A29E;
-  --color-pierre-500: #78716C;
-  --color-pierre-600: #57534E;
-  --color-pierre-700: #44403C;
+  --color-pierre-50: #fafaf9;
+  --color-pierre-100: #f5f4f1;
+  --color-pierre-200: #e7e5e0;
+  --color-pierre-300: #d6d3cd;
+  --color-pierre-400: #a8a29e;
+  --color-pierre-500: #78716c;
+  --color-pierre-600: #57534e;
+  --color-pierre-700: #44403c;
   --color-pierre-800: #292524;
-  --color-pierre-900: #1C1917;
+  --color-pierre-900: #1c1917;
 
   /* ── États ────────────────────────────────────────── */
-  --color-succes: #10B981;
-  --color-succes-soft: #D1FAE5;
-  --color-alerte: #DC2626;
-  --color-alerte-soft: #FEE2E2;
-  --color-info: #3B82F6;
-  --color-info-soft: #DBEAFE;
+  --color-succes: #10b981;
+  --color-succes-soft: #d1fae5;
+  --color-alerte: #dc2626;
+  --color-alerte-soft: #fee2e2;
+  --color-info: #3b82f6;
+  --color-info-soft: #dbeafe;
 
   /* ── Typographies ─────────────────────────────────── */
-  --font-serif: 'Playfair Display', Georgia, serif;
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
 
   /* ── Rayons ───────────────────────────────────────── */
   --radius-sm: 6px;
@@ -60,7 +59,8 @@ html {
 
   /* ── Ombres (très discrètes) ──────────────────────── */
   --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.03), 0 1px 3px 0 rgb(0 0 0 / 0.04);
-  --shadow-elevated: 0 4px 12px -2px rgb(0 0 0 / 0.06), 0 2px 6px -2px rgb(0 0 0 / 0.04);
+  --shadow-elevated:
+    0 4px 12px -2px rgb(0 0 0 / 0.06), 0 2px 6px -2px rgb(0 0 0 / 0.04);
   --shadow-modal: 0 20px 40px -12px rgb(0 0 0 / 0.15);
 }
 
@@ -70,7 +70,7 @@ html {
 
 :root {
   font-family: var(--font-sans);
-  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   color-scheme: light;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -92,7 +92,10 @@ body {
    TYPOGRAPHIE
    ═══════════════════════════════════════════════════════ */
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   font-family: var(--font-serif);
   font-weight: 500;
   letter-spacing: -0.01em;
@@ -100,9 +103,15 @@ h1, h2, h3, h4 {
   line-height: 1.15;
 }
 
-h1 { font-size: 2.5rem; }
-h2 { font-size: 1.875rem; }
-h3 { font-size: 1.375rem; }
+h1 {
+  font-size: 2.5rem;
+}
+h2 {
+  font-size: 1.875rem;
+}
+h3 {
+  font-size: 1.375rem;
+}
 
 /* Classes utilitaires typographiques */
 .font-display {
@@ -196,11 +205,21 @@ h3 { font-size: 1.375rem; }
          px-2.5 py-1 rounded-full
          text-xs font-medium;
 }
-.badge-noir    { @apply bg-noir text-white; }
-.badge-beige   { @apply bg-beige-soft text-brun; }
-.badge-succes  { @apply bg-succes-soft text-succes; }
-.badge-alerte  { @apply bg-alerte-soft text-alerte; }
-.badge-neutre  { @apply bg-pierre-100 text-pierre-600; }
+.badge-noir {
+  @apply bg-noir text-white;
+}
+.badge-beige {
+  @apply bg-beige-soft text-brun;
+}
+.badge-succes {
+  @apply bg-succes-soft text-succes;
+}
+.badge-alerte {
+  @apply bg-alerte-soft text-alerte;
+}
+.badge-neutre {
+  @apply bg-pierre-100 text-pierre-600;
+}
 
 /* ── Divider ──────────────────────────────────────── */
 .divider {
@@ -211,8 +230,13 @@ h3 { font-size: 1.375rem; }
    UTILITAIRES
    ═══════════════════════════════════════════════════════ */
 
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
 /* Ligne décorative évoquant une couture (très subtile) */
 .stitch-line {
@@ -228,8 +252,14 @@ h3 { font-size: 1.375rem; }
 
 /* Animation d'entrée douce */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .animate-fade-up {
   animation: fade-up 0.4s ease-out;
@@ -247,4 +277,18 @@ h3 { font-size: 1.375rem; }
 *:focus-visible {
   outline: 2px solid var(--color-noir);
   outline-offset: 2px;
+}
+
+/* ═══════════════════════════════════════════════════
+   SKELETON LOADERS
+   ═══════════════════════════════════════════════════ */
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }

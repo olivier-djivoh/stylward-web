@@ -3,6 +3,7 @@ import { api } from '../../lib/api'
 import AdminLayout from '../../components/AdminLayout'
 import Spinner from '../../components/Spinner'
 import { useNavigate } from 'react-router-dom'
+import AdminListSkeleton from '../../components/skeletons/AdminListSkeleton'
 
 interface Archive {
   id: string
@@ -57,14 +58,12 @@ export default function AdminArchives() {
   }, [])
 
   if (loading) {
-    return (
-      <AdminLayout>
-        <div className="py-20 flex justify-center">
-          <Spinner label="Chargement..." />
-        </div>
-      </AdminLayout>
-    )
-  }
+  return (
+    <AdminLayout>
+      <AdminListSkeleton count={5} />
+    </AdminLayout>
+  )
+}
 
   async function handleClear() {
   if (!confirm('Vider toute l\'archive ? Cette action est irréversible.')) return

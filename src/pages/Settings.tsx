@@ -1,105 +1,120 @@
-import { FormEvent, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { api } from '../lib/api'
-import { useAuth } from '../contexts/AuthContext'
-import DashboardLayout from '../components/DashboardLayout'
+import { FormEvent, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { api } from "../lib/api";
+import { useAuth } from "../contexts/AuthContext";
+import DashboardLayout from "../components/DashboardLayout";
+import { useToast } from "../contexts/ToastContext";
+import FormSkeleton from "../components/skeletons/FormSkeleton";
 
 export default function Settings() {
-  const navigate = useNavigate()
-  const { user, logout } = useAuth()
+  const navigate = useNavigate();
+  const toast = useToast();
+  const { user, logout } = useAuth();
 
   const [pwdForm, setPwdForm] = useState({
-    current_password: '',
-    password: '',
-    password_confirmation: '',
-  })
-  const [pwdSaving, setPwdSaving] = useState(false)
-  const [pwdSuccess, setPwdSuccess] = useState('')
-  const [pwdError, setPwdError] = useState('')
+    current_password: "",
+    password: "",
+    password_confirmation: "",
+  });
+  const [pwdSaving, setPwdSaving] = useState(false);
+  const [pwdSuccess, setPwdSuccess] = useState("");
+  const [pwdError, setPwdError] = useState("");
 
-  const [deleteOpen, setDeleteOpen] = useState(false)
-  const [deletePassword, setDeletePassword] = useState('')
-  const [deleteReason, setDeleteReason] = useState('')
-  const [deleteReasonDetail, setDeleteReasonDetail] = useState('')
-  const [deleteSaving, setDeleteSaving] = useState(false)
-  const [deleteError, setDeleteError] = useState('')
-  const [deletionRequested, setDeletionRequested] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteReason, setDeleteReason] = useState("");
+  const [deleteReasonDetail, setDeleteReasonDetail] = useState("");
+  const [deleteSaving, setDeleteSaving] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [deletionRequested, setDeletionRequested] = useState(false);
 
   function updatePwd(field: string, value: string) {
-    setPwdForm((prev) => ({ ...prev, [field]: value }))
+    setPwdForm((prev) => ({ ...prev, [field]: value }));
   }
 
   async function handlePasswordChange(e: FormEvent) {
-    e.preventDefault()
-    setPwdError('')
-    setPwdSuccess('')
-    setPwdSaving(true)
+    e.preventDefault();
+    setPwdError("");
+    setPwdSuccess("");
+    setPwdSaving(true);
     try {
-      await api.put('/password', pwdForm)
-      setPwdSuccess('Mot de passe mis à jour. Vos autres appareils ont été déconnectés.')
-      setPwdForm({ current_password: '', password: '', password_confirmation: '' })
-      setTimeout(() => setPwdSuccess(''), 5000)
+      await api.put("/password", pwdForm);
+      toast.success(
+        "Mot de passe mis à jour. Vos autres appareils ont été déconnectés.",
+      );
+      setPwdForm({
+        current_password: "",
+        password: "",
+        password_confirmation: "",
+      });
     } catch (err: any) {
       if (err.response?.data?.errors) {
-        const first = Object.values(err.response.data.errors)[0]
-        setPwdError(Array.isArray(first) ? first[0] : String(first))
+        const first = Object.values(err.response.data.errors)[0];
+        setPwdError(Array.isArray(first) ? first[0] : String(first));
       } else {
-        setPwdError('Erreur lors du changement de mot de passe')
+        toast.error("Erreur lors du changement de mot de passe");
       }
     } finally {
-      setPwdSaving(false)
+      setPwdSaving(false);
     }
   }
 
   async function handleDeleteAccount() {
-  setDeleteError('')
-  setDeleteSaving(true)
-  try {
-    await api.post('/account/request-deletion', {
-      password: deletePassword,
-      reason: deleteReason || null,
-      reason_detail: deleteReasonDetail || null,
-    })
-    setDeletionRequested(true)
-  } catch (err: any) {
-    // Log complet pour debug
-    console.error('Erreur suppression:', err.response?.data || err)
+    setDeleteError("");
+    setDeleteSaving(true);
+    try {
+      await api.post("/account/request-deletion", {
+        password: deletePassword,
+        reason: deleteReason || null,
+        reason_detail: deleteReasonDetail || null,
+      });
+      setDeletionRequested(true);
+    } catch (err: any) {
+      // Log complet pour debug
+      console.error("Erreur suppression:", err.response?.data || err);
 
-    // Message détaillé
-    if (err.response?.data?.errors) {
-      const first = Object.values(err.response.data.errors)[0]
-      setDeleteError(Array.isArray(first) ? first[0] : String(first))
-    } else if (err.response?.data?.message) {
-      setDeleteError(err.response.data.message)
-    } else if (err.response?.status) {
-      setDeleteError(`Erreur ${err.response.status}`)
-    } else {
-      setDeleteError('Erreur réseau — vérifiez votre connexion')
+      // Message détaillé
+      if (err.response?.data?.errors) {
+        const first = Object.values(err.response.data.errors)[0];
+        setDeleteError(Array.isArray(first) ? first[0] : String(first));
+      } else if (err.response?.data?.message) {
+        setDeleteError(err.response.data.message);
+      } else if (err.response?.status) {
+        setDeleteError(`Erreur ${err.response.status}`);
+      } else {
+        toast.error("Erreur réseau — vérifiez votre connexion");
+      }
+    } finally {
+      setDeleteSaving(false);
     }
-  } finally {
-    setDeleteSaving(false)
   }
-}
 
   return (
     <DashboardLayout>
       <div className="mb-8">
         <p className="font-overline text-pierre-500 mb-2">Mon compte</p>
-        <h1 className="font-display text-3xl sm:text-4xl text-noir">Paramètres</h1>
+        <h1 className="font-display text-3xl sm:text-4xl text-noir">
+          Paramètres
+        </h1>
       </div>
 
       <div className="max-w-2xl space-y-8">
-
         <section>
           <p className="font-overline text-pierre-500 mb-4">Informations</p>
           <div className="card">
             <dl className="space-y-4">
               <div>
-                <dt className="text-[10px] uppercase tracking-[0.2em] text-pierre-400 font-medium mb-1">Nom complet</dt>
-                <dd className="text-sm text-noir font-medium">{user?.first_name} {user?.last_name}</dd>
+                <dt className="text-[10px] uppercase tracking-[0.2em] text-pierre-400 font-medium mb-1">
+                  Nom complet
+                </dt>
+                <dd className="text-sm text-noir font-medium">
+                  {user?.first_name} {user?.last_name}
+                </dd>
               </div>
               <div>
-                <dt className="text-[10px] uppercase tracking-[0.2em] text-pierre-400 font-medium mb-1">Email</dt>
+                <dt className="text-[10px] uppercase tracking-[0.2em] text-pierre-400 font-medium mb-1">
+                  Email
+                </dt>
                 <dd className="text-sm text-noir font-mono">{user?.email}</dd>
               </div>
             </dl>
@@ -110,30 +125,74 @@ export default function Settings() {
           <p className="font-overline text-pierre-500 mb-4">Sécurité</p>
           <form onSubmit={handlePasswordChange} className="card space-y-5">
             <div>
-              <h3 className="font-serif text-lg text-noir mb-1">Changer mon mot de passe</h3>
-              <p className="text-xs text-pierre-500">Par sécurité, vos autres appareils seront déconnectés.</p>
+              <h3 className="font-serif text-lg text-noir mb-1">
+                Changer mon mot de passe
+              </h3>
+              <p className="text-xs text-pierre-500">
+                Par sécurité, vos autres appareils seront déconnectés.
+              </p>
             </div>
 
-            {pwdError && <div className="p-3 rounded-[10px] bg-alerte-soft border border-alerte/20 text-alerte text-sm">{pwdError}</div>}
-            {pwdSuccess && <div className="p-3 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm">✅ {pwdSuccess}</div>}
+            {pwdError && (
+              <div className="p-3 rounded-[10px] bg-alerte-soft border border-alerte/20 text-alerte text-sm">
+                {pwdError}
+              </div>
+            )}
+            {pwdSuccess && (
+              <div className="p-3 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm">
+                ✅ {pwdSuccess}
+              </div>
+            )}
 
             <div>
               <label className="input-label">Mot de passe actuel</label>
-              <input type="password" value={pwdForm.current_password} onChange={(e) => updatePwd('current_password', e.target.value)} required className="input-field" placeholder="••••••••" />
+              <input
+                type="password"
+                value={pwdForm.current_password}
+                onChange={(e) => updatePwd("current_password", e.target.value)}
+                required
+                className="input-field"
+                placeholder="••••••••"
+              />
             </div>
             <div>
               <label className="input-label">Nouveau mot de passe</label>
-              <input type="password" value={pwdForm.password} onChange={(e) => updatePwd('password', e.target.value)} required minLength={12} className="input-field" placeholder="••••••••" />
-              <p className="text-xs text-pierre-400 mt-1.5">12 caractères min · majuscule · minuscule · chiffre · spécial.</p>
+              <input
+                type="password"
+                value={pwdForm.password}
+                onChange={(e) => updatePwd("password", e.target.value)}
+                required
+                minLength={12}
+                className="input-field"
+                placeholder="••••••••"
+              />
+              <p className="text-xs text-pierre-400 mt-1.5">
+                12 caractères min · majuscule · minuscule · chiffre · spécial.
+              </p>
             </div>
             <div>
               <label className="input-label">Confirmer</label>
-              <input type="password" value={pwdForm.password_confirmation} onChange={(e) => updatePwd('password_confirmation', e.target.value)} required className="input-field" placeholder="••••••••" />
+              <input
+                type="password"
+                value={pwdForm.password_confirmation}
+                onChange={(e) =>
+                  updatePwd("password_confirmation", e.target.value)
+                }
+                required
+                className="input-field"
+                placeholder="••••••••"
+              />
             </div>
 
             <div className="pt-2">
-              <button type="submit" disabled={pwdSaving} className="btn-primary">
-                {pwdSaving ? 'Enregistrement...' : 'Mettre à jour le mot de passe'}
+              <button
+                type="submit"
+                disabled={pwdSaving}
+                className="btn-primary"
+              >
+                {pwdSaving
+                  ? "Enregistrement..."
+                  : "Mettre à jour le mot de passe"}
               </button>
             </div>
           </form>
@@ -142,55 +201,99 @@ export default function Settings() {
         <section>
           <p className="font-overline text-alerte mb-4">Zone sensible</p>
           <div className="card border-alerte/20">
-
             {deletionRequested ? (
               <div className="text-center py-4">
                 <div className="w-14 h-14 rounded-full bg-succes-soft flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-7 h-7 text-succes" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <svg
+                    className="w-7 h-7 text-succes"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
                     <path d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h3 className="font-serif text-lg text-noir mb-2">Demande enregistrée</h3>
+                <h3 className="font-serif text-lg text-noir mb-2">
+                  Demande enregistrée
+                </h3>
                 <p className="text-sm text-pierre-600 leading-relaxed max-w-md mx-auto">
-                  Un email de confirmation a été envoyé à <strong>{user?.email}</strong>.
-                  Cliquez sur le lien qu'il contient pour finaliser la suppression.
+                  Un email de confirmation a été envoyé à{" "}
+                  <strong>{user?.email}</strong>. Cliquez sur le lien qu'il
+                  contient pour finaliser la suppression.
                 </p>
-                <p className="text-xs text-pierre-400 mt-4">Vérifiez vos spams si vous ne voyez rien dans les 5 minutes.</p>
+                <p className="text-xs text-pierre-400 mt-4">
+                  Vérifiez vos spams si vous ne voyez rien dans les 5 minutes.
+                </p>
               </div>
             ) : !deleteOpen ? (
               <>
-                <h3 className="font-serif text-lg text-noir mb-1">Supprimer mon compte</h3>
+                <h3 className="font-serif text-lg text-noir mb-1">
+                  Supprimer mon compte
+                </h3>
                 <p className="text-sm text-pierre-600 leading-relaxed mb-5">
-                  Cette action est <strong>définitive après 30 jours</strong>. Votre boutique sera désactivée immédiatement, mais vous pourrez annuler en vous reconnectant.
+                  Cette action est <strong>définitive après 30 jours</strong>.
+                  Votre vitrine sera désactivée immédiatement, mais vous pourrez
+                  annuler en vous reconnectant.
                 </p>
-                <button type="button" onClick={() => setDeleteOpen(true)} className="w-full sm:w-auto text-sm font-medium text-alerte border border-alerte/30 hover:bg-alerte-soft rounded-[10px] py-2.5 px-5 transition-colors">
+                <button
+                  type="button"
+                  onClick={() => setDeleteOpen(true)}
+                  className="w-full sm:w-auto text-sm font-medium text-alerte border border-alerte/30 hover:bg-alerte-soft rounded-[10px] py-2.5 px-5 transition-colors"
+                >
                   Supprimer mon compte
                 </button>
               </>
             ) : (
               <div className="space-y-4 p-4 rounded-xl bg-alerte-soft/40 border border-alerte/20">
-                <p className="text-xs text-alerte font-medium uppercase tracking-[0.15em]">Confirmation requise</p>
+                <p className="text-xs text-alerte font-medium uppercase tracking-[0.15em]">
+                  Confirmation requise
+                </p>
                 <p className="text-sm text-pierre-700 leading-relaxed">
-                  Nous vous enverrons un email pour confirmer. Votre boutique sera désactivée dès la confirmation.
+                  Nous vous enverrons un email pour confirmer. Votre vitrine
+                  sera désactivée dès la confirmation.
                 </p>
 
-                {deleteError && <div className="p-3 rounded-lg bg-white border border-alerte/20 text-alerte text-xs">{deleteError}</div>}
+                {deleteError && (
+                  <div className="p-3 rounded-lg bg-white border border-alerte/20 text-alerte text-xs">
+                    {deleteError}
+                  </div>
+                )}
 
                 <div>
-                  <label className="block text-xs font-medium text-pierre-700 mb-1.5">Mot de passe</label>
-                  <input type="password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} className="input-field" placeholder="Votre mot de passe" />
+                  <label className="block text-xs font-medium text-pierre-700 mb-1.5">
+                    Mot de passe
+                  </label>
+                  <input
+                    type="password"
+                    value={deletePassword}
+                    onChange={(e) => setDeletePassword(e.target.value)}
+                    className="input-field"
+                    placeholder="Votre mot de passe"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-xs font-medium text-pierre-700 mb-1.5">
-                    Pourquoi partez-vous ? <span className="text-pierre-400">(optionnel)</span>
+                    Pourquoi partez-vous ?{" "}
+                    <span className="text-pierre-400">(optionnel)</span>
                   </label>
-                  <select value={deleteReason} onChange={(e) => setDeleteReason(e.target.value)} className="input-field">
+                  <select
+                    value={deleteReason}
+                    onChange={(e) => setDeleteReason(e.target.value)}
+                    className="input-field"
+                  >
                     <option value="">— Choisir —</option>
-                    <option value="no_longer_needed">Je n'en ai plus besoin</option>
+                    <option value="no_longer_needed">
+                      Je n'en ai plus besoin
+                    </option>
                     <option value="too_expensive">Trop cher</option>
-                    <option value="missing_features">Fonctionnalités manquantes</option>
-                    <option value="switched_tool">Je suis passé à un autre outil</option>
+                    <option value="missing_features">
+                      Fonctionnalités manquantes
+                    </option>
+                    <option value="switched_tool">
+                      Je suis passé à un autre outil
+                    </option>
                     <option value="bug">Problème technique</option>
                     <option value="other">Autre raison</option>
                   </select>
@@ -199,17 +302,40 @@ export default function Settings() {
                 {deleteReason && (
                   <div>
                     <label className="block text-xs font-medium text-pierre-700 mb-1.5">
-                      Détails <span className="text-pierre-400">(optionnel)</span>
+                      Détails{" "}
+                      <span className="text-pierre-400">(optionnel)</span>
                     </label>
-                    <textarea value={deleteReasonDetail} onChange={(e) => setDeleteReasonDetail(e.target.value)} rows={3} maxLength={500} className="input-field resize-none" placeholder="Quelque chose à ajouter ?" />
+                    <textarea
+                      value={deleteReasonDetail}
+                      onChange={(e) => setDeleteReasonDetail(e.target.value)}
+                      rows={3}
+                      maxLength={500}
+                      className="input-field resize-none"
+                      placeholder="Quelque chose à ajouter ?"
+                    />
                   </div>
                 )}
 
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <button type="button" onClick={handleDeleteAccount} disabled={deleteSaving || !deletePassword} className="flex-1 text-sm font-medium text-white bg-alerte hover:opacity-90 rounded-[10px] py-2.5 transition disabled:opacity-40">
-                    {deleteSaving ? 'Envoi...' : 'Demander la suppression'}
+                  <button
+                    type="button"
+                    onClick={handleDeleteAccount}
+                    disabled={deleteSaving || !deletePassword}
+                    className="flex-1 text-sm font-medium text-white bg-alerte hover:opacity-90 rounded-[10px] py-2.5 transition disabled:opacity-40"
+                  >
+                    {deleteSaving ? "Envoi..." : "Demander la suppression"}
                   </button>
-                  <button type="button" onClick={() => { setDeleteOpen(false); setDeletePassword(''); setDeleteReason(''); setDeleteReasonDetail(''); setDeleteError('') }} className="btn-ghost text-sm">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeleteOpen(false);
+                      setDeletePassword("");
+                      setDeleteReason("");
+                      setDeleteReasonDetail("");
+                      setDeleteError("");
+                    }}
+                    className="btn-ghost text-sm"
+                  >
                     Annuler
                   </button>
                 </div>
@@ -217,8 +343,7 @@ export default function Settings() {
             )}
           </div>
         </section>
-
       </div>
     </DashboardLayout>
-  )
+  );
 }

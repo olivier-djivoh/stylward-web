@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
 import DashboardLayout from '../components/DashboardLayout'
+import { useToast } from '../contexts/ToastContext'
 
 interface Category {
   id: string
@@ -11,6 +12,7 @@ interface Category {
 
 export default function CreateModel() {
   const navigate = useNavigate()
+  const toast = useToast()
   const [categories, setCategories] = useState<Category[]>([])
   const [form, setForm] = useState({
     name: '',
@@ -50,13 +52,14 @@ export default function CreateModel() {
       if (form.price) payload.price = Number(form.price)
 
       await api.post('/models', payload)
+      toast.success('Création enregistrée.')
       navigate('/dashboard/models')
     } catch (err: any) {
       if (err.response?.data?.errors) {
         const first = Object.values(err.response.data.errors)[0]
         setError(Array.isArray(first) ? first[0] : String(first))
       } else {
-        setError('Erreur lors de la création')
+        toast.error('Erreur lors de la création')
       }
     } finally {
       setLoading(false)

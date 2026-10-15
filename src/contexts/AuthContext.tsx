@@ -8,6 +8,8 @@ interface User {
   email: string
   phone?: string | null
   role: string
+  profession: string
+  gender: string
   status: string
 }
 
@@ -29,6 +31,8 @@ interface RegisterData {
   last_name: string
   email: string
   phone?: string
+  profession: string
+  gender: string
   password: string
   password_confirmation: string
 }

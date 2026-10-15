@@ -1,53 +1,84 @@
-import { useEffect,ReactNode, useState } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
-import ScrollToTopButton from './ScrollToTopButton'
-import NotificationBell from './NotificationBell'
-import { api } from '../lib/api'
-import { onNotificationsChanged } from '../lib/notifications'
+import { useEffect, ReactNode, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import ScrollToTopButton from "./ScrollToTopButton";
+import NotificationBell from "./NotificationBell";
+import { api } from "../lib/api";
+import { onNotificationsChanged } from "../lib/notifications";
 
 interface Props {
-  children: ReactNode
-  title?: string
-  subtitle?: string
-  actions?: ReactNode
+  children: ReactNode;
+  title?: string;
+  subtitle?: string;
+  actions?: ReactNode;
 }
 
-export default function DashboardLayout({ children, title, subtitle, actions }: Props) {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [unreadCount, setUnreadCount] = useState(0)
+export default function DashboardLayout({
+  children,
+  title,
+  subtitle,
+  actions,
+}: Props) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-  async function fetchCount() {
-    try {
-      const { data } = await api.get('/notifications/unread-count')
-      setUnreadCount(data.count)
-    } catch {}
-  }
-  fetchCount()
+    async function fetchCount() {
+      try {
+        const { data } = await api.get("/notifications/unread-count");
+        setUnreadCount(data.count);
+      } catch {}
+    }
+    fetchCount();
 
-  const interval = setInterval(fetchCount, 30000)
-  const unsubscribe = onNotificationsChanged(fetchCount)
+    const interval = setInterval(fetchCount, 30000);
+    const unsubscribe = onNotificationsChanged(fetchCount);
 
-  return () => {
-    clearInterval(interval)
-    unsubscribe()
-  }
-}, [])
+    return () => {
+      clearInterval(interval);
+      unsubscribe();
+    };
+  }, []);
+
+  const [loggingOut, setLoggingOut] = useState(false);
 
   async function handleLogout() {
-    await logout()
-    navigate('/login')
+    setLoggingOut(true);
+    // Petit délai pour laisser la transition démarrer
+    await new Promise((r) => setTimeout(r, 600));
+    await logout();
+    navigate("/login");
   }
 
   const navItems = [
-  { to: '/dashboard', label: 'Tableau de bord', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-  { to: '/dashboard/models', label: 'Mes créations', icon: 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01' },
-  { to: '/dashboard/shop', label: 'Ma boutique', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
-  { to: '/dashboard/settings', label: 'Paramètres', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
-]
+    {
+      to: "/dashboard",
+      label: "Tableau de bord",
+      icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6",
+    },
+    {
+      to: "/dashboard/models",
+      label: "Mes créations",
+      icon: "M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01",
+    },
+    {
+      to: "/dashboard/collections",
+      label: "Collections",
+      icon: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10",
+    },
+    {
+      to: "/dashboard/shop",
+      label: "Ma vitrine",
+      icon: "M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z",
+    },
+    {
+      to: "/dashboard/settings",
+      label: "Paramètres",
+      icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-blanc-casse">
@@ -56,11 +87,15 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
         {/* Logo */}
         <div className="px-6 py-6 border-b border-white/5">
           <Link to="/dashboard" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-blanc-casse flex items-center justify-center">
-              <span className="font-serif text-xl text-noir leading-none pt-0.5">S</span>
+            <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0">
+              <img
+                src="/icone1.svg"
+                alt="Stylward"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
-              <p className="text-sm font-medium text-blanc-casse">SaaS Stylistes</p>
+              <p className="text-sm font-medium text-blanc-casse">Stylward</p>
               <p className="text-[10px] uppercase tracking-widest text-blanc-casse/40">
                 Studio
               </p>
@@ -74,12 +109,12 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.to === '/dashboard'}
+              end={item.to === "/dashboard"}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                   isActive
-                    ? 'bg-white/10 text-blanc-casse font-medium'
-                    : 'text-blanc-casse/60 hover:text-blanc-casse hover:bg-white/5'
+                    ? "bg-white/10 text-blanc-casse font-medium"
+                    : "text-blanc-casse/60 hover:text-blanc-casse hover:bg-white/5"
                 }`
               }
             >
@@ -99,20 +134,20 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
           ))}
         </nav>
 
-        {/* Bouton Voir ma boutique */}
-        {user?.role === 'stylist' && (
+        {/* Bouton Voir ma vitrine */}
+        {user?.role === "stylist" && (
           <div className="px-3 pb-3">
             <Link
               to="/dashboard/shop"
               className="block w-full text-center text-xs font-medium text-blanc-casse/80 bg-white/5 hover:bg-white/10 rounded-lg py-2.5 transition"
             >
-              Voir ma boutique →
+              Voir ma vitrine →
             </Link>
           </div>
         )}
 
         {/* Admin */}
-        {user?.role === 'admin' && (
+        {user?.role === "admin" && (
           <div className="px-3 pb-3">
             <Link
               to="/admin"
@@ -124,24 +159,30 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
         )}
 
         {/* Notifications desktop */}
-          <div className="px-3 pb-3">
-            <Link
-              to="/dashboard/notifications"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-blanc-casse/60 hover:text-blanc-casse hover:bg-white/5 transition-all"
+        <div className="px-3 pb-3">
+          <Link
+            to="/dashboard/notifications"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-blanc-casse/60 hover:text-blanc-casse hover:bg-white/5 transition-all"
+          >
+            <svg
+              className="w-[18px] h-[18px] shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.75}
             >
-              <svg className="w-[18px] h-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-              <span className="flex-1">Notifications</span>
+              <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span className="flex-1">Notifications</span>
 
-              {/* Badge rouge */}
-              {unreadCount > 0 && (
-                <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-alerte text-white text-[10px] font-bold flex items-center justify-center shrink-0">
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
-            </Link>
-          </div>
+            {/* Badge rouge */}
+            {unreadCount > 0 && (
+              <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-alerte text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
+          </Link>
+        </div>
 
         {/* Profil */}
         <div className="px-3 py-4 border-t border-white/5">
@@ -177,13 +218,23 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
             className="p-2 -ml-2 text-noir"
             aria-label="Menu"
           >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
           <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-noir flex items-center justify-center">
-              <span className="font-serif text-lg text-blanc-casse leading-none pt-0.5">S</span>
+            <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
+              <img
+                src="/icone1.svg"
+                alt="Stylward"
+                className="w-full h-full object-cover"
+              />
             </div>
           </Link>
           <NotificationBell />
@@ -193,52 +244,76 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
       {/* ============ MENU MOBILE OVERLAY ============ */}
       {mobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setMobileMenuOpen(false)} />
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setMobileMenuOpen(false)}
+          />
           <aside className="relative w-72 bg-noir text-blanc-casse flex flex-col">
             <div className="px-6 py-6 border-b border-white/5 flex items-center justify-between">
               <span className="text-sm font-medium">Menu</span>
-              <button onClick={() => setMobileMenuOpen(false)} className="p-1 text-blanc-casse/60">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-1 text-blanc-casse/60"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
                   <path d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
             <nav className="flex-1 px-3 py-6 space-y-1">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === '/dashboard'}
-                onClick={() => setMobileMenuOpen(false)}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-3 rounded-lg text-sm transition-all ${
-                    isActive
-                      ? 'bg-white/10 text-blanc-casse font-medium'
-                      : 'text-blanc-casse/60 hover:text-blanc-casse hover:bg-white/5'
-                  }`
-                }
-              >
-                <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                  <path d={item.icon} />
-                </svg>
-                <span>{item.label}</span>
-              </NavLink>
-            ))}
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.to === "/dashboard"}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-3 rounded-lg text-sm transition-all ${
+                      isActive
+                        ? "bg-white/10 text-blanc-casse font-medium"
+                        : "text-blanc-casse/60 hover:text-blanc-casse hover:bg-white/5"
+                    }`
+                  }
+                >
+                  <svg
+                    className="w-5 h-5 shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.75}
+                  >
+                    <path d={item.icon} />
+                  </svg>
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
 
-            {/* Lien Admin (visible uniquement pour les admins) */}
-            {user?.role === 'admin' && (
-              <NavLink
-                to="/admin"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm transition-all text-[#B08D57] hover:bg-[#B08D57]/10 mt-3 border-t border-white/5 pt-4"
-              >
-                <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                  <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                <span className="font-medium">Administration</span>
-              </NavLink>
-            )}
-          </nav>
+              {/* Lien Admin (visible uniquement pour les admins) */}
+              {user?.role === "admin" && (
+                <NavLink
+                  to="/admin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm transition-all text-[#B08D57] hover:bg-[#B08D57]/10 mt-3 border-t border-white/5 pt-4"
+                >
+                  <svg
+                    className="w-5 h-5 shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.75}
+                  >
+                    <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <span className="font-medium">Administration</span>
+                </NavLink>
+              )}
+            </nav>
             <div className="px-3 py-4 border-t border-white/5">
               <button
                 onClick={handleLogout}
@@ -266,18 +341,28 @@ export default function DashboardLayout({ children, title, subtitle, actions }: 
                     <p className="text-pierre-500 text-sm mt-1">{subtitle}</p>
                   )}
                 </div>
-                {actions && <div className="flex items-center gap-2">{actions}</div>}
+                {actions && (
+                  <div className="flex items-center gap-2">{actions}</div>
+                )}
               </div>
             </div>
           </header>
         )}
 
-                <main className="max-w-6xl mx-auto px-4 sm:px-8 py-8">
-          {children}
-        </main>
+        <main className="max-w-6xl mx-auto px-4 sm:px-8 py-8">{children}</main>
       </div>
 
       <ScrollToTopButton />
+
+      {loggingOut && (
+        <div className="fixed inset-0 z-[200] bg-blanc-casse/95 backdrop-blur-sm flex items-center justify-center animate-[fade-in_0.3s_ease-out]">
+          <div className="text-center">
+            <div className="w-12 h-12 border-2 border-pierre-300 border-t-noir rounded-full animate-spin mx-auto mb-4" />
+            <p className="font-display text-xl text-noir">À bientôt...</p>
+            <p className="text-sm text-pierre-500 mt-1">Déconnexion en cours</p>
+          </div>
+        </div>
+      )}
     </div>
-  )
+  );
 }

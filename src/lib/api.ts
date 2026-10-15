@@ -33,7 +33,11 @@ api.interceptors.response.use(
       // On ne redirige PAS sur ces pages :
       // - login / register : déjà en train de se connecter
       // - account/deletion/confirm/... : page publique de confirmation
-      const isAuthPage = currentPath === '/login' || currentPath === '/register'
+      const isAuthPage =
+          currentPath === '/login' ||
+          currentPath === '/register' ||
+          currentPath === '/forgot-password' ||
+          currentPath === '/reset-password'
       const isConfirmPage = currentPath.startsWith('/account/deletion/confirm/')
 
       if (!isAuthPage && !isConfirmPage) {

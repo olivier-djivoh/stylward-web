@@ -3,6 +3,7 @@ import { api } from '../lib/api'
 import DashboardLayout from '../components/DashboardLayout'
 import Spinner from '../components/Spinner'
 import { emitNotificationsChanged } from '../lib/notifications'
+import NotificationsSkeleton from '../components/skeletons/NotificationsSkeleton'
 
 interface Notification {
   id: string
@@ -87,9 +88,7 @@ async function handleDelete(id: string) {
       }
     >
       {loading ? (
-        <div className="py-20 flex justify-center">
-          <Spinner label="Chargement..." />
-        </div>
+        <NotificationsSkeleton count={6} />
       ) : notifications.length === 0 ? (
         <div className="card text-center py-16">
           <p className="font-serif text-2xl text-noir mb-2">Aucune notification</p>

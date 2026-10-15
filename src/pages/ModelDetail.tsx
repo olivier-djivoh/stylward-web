@@ -3,7 +3,11 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import DashboardLayout from '../components/DashboardLayout'
 import Spinner from '../components/Spinner'
+import { useToast } from '../contexts/ToastContext'
 import MultiImageUploader from '../components/MultiImageUploader'
+import ShareModal from '../components/ShareModal'
+import ModelsGridSkeleton from '../components/skeletons/ModelsGridSkeleton'
+import Skeleton from '../components/Skeleton'
 
 interface Category {
   id: string
@@ -26,7 +30,7 @@ interface Model {
 export default function ModelDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-
+  const toast = useToast()
   const [model, setModel] = useState<Model | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
@@ -34,6 +38,8 @@ export default function ModelDetail() {
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
+  const [shopName, setShopName] = useState('')
 
   const [form, setForm] = useState({
     name: '',
@@ -45,32 +51,34 @@ export default function ModelDetail() {
   })
 
   useEffect(() => {
-    async function load() {
-      if (!id) return
-      try {
-        const [modelRes, catRes] = await Promise.all([
-          api.get(`/models/${id}`),
-          api.get('/categories'),
-        ])
-        const m = modelRes.data.data
-        setModel(m)
-        setCategories(catRes.data.data)
-        setForm({
-          name: m.name,
-          category_id: m.category?.id || '',
-          description: m.description || '',
-          price: m.price ? String(Number(m.price)) : '',
-          color: m.color || '',
-          reference: m.reference || '',
-        })
-      } catch {
-        setError('Modèle introuvable')
-      } finally {
-        setLoading(false)
-      }
+  async function load() {
+    if (!id) return
+    try {
+      const [modelRes, catRes, shopRes] = await Promise.all([
+        api.get(`/models/${id}`),
+        api.get('/categories'),
+        api.get('/shop').catch(() => ({ data: null })),
+      ])
+      const m = modelRes.data.data
+      setModel(m)
+      setCategories(catRes.data.data)
+      setShopName(shopRes.data?.name || '')
+      setForm({
+        name: m.name,
+        category_id: m.category?.id || '',
+        description: m.description || '',
+        price: m.price ? String(Number(m.price)) : '',
+        color: m.color || '',
+        reference: m.reference || '',
+      })
+    } catch {
+      setError('Modèle introuvable')
+    } finally {
+      setLoading(false)
     }
-    load()
-  }, [id])
+  }
+  load()
+}, [id])
 
   function update(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -94,14 +102,14 @@ export default function ModelDetail() {
 
       const { data } = await api.put(`/models/${model.id}`, payload)
       setModel(data.data)
-      setSuccess('Modifications enregistrées.')
+      toast.success('Modifications enregistrées.')
       setTimeout(() => setSuccess(''), 3000)
     } catch (err: any) {
       if (err.response?.data?.errors) {
         const first = Object.values(err.response.data.errors)[0]
         setError(Array.isArray(first) ? first[0] : String(first))
       } else {
-        setError('Erreur lors de l\'enregistrement')
+       toast.error ('Erreur lors de l\'enregistrement')
       }
     } finally {
       setSaving(false)
@@ -123,7 +131,7 @@ export default function ModelDetail() {
         prev ? { ...prev, images: prev.images.filter((i) => i.id !== imageId) } : prev
       )
     } catch {
-      alert('Erreur lors de la suppression')
+      toast.error('Erreur lors de la suppression')
     }
   }
 
@@ -143,7 +151,7 @@ export default function ModelDetail() {
           : prev
       )
     } catch {
-      alert('Erreur')
+      toast.error('Erreur')
     }
   }
 
@@ -167,20 +175,34 @@ export default function ModelDetail() {
       await api.delete(`/models/${model.id}`)
       navigate('/dashboard/models')
     } catch {
-      alert('Erreur lors de la suppression')
+      toast.error('Erreur lors de la suppression')
       setDeleting(false)
     }
   }
 
   if (loading) {
-    return (
-      <DashboardLayout>
-        <div className="py-20 flex justify-center">
-          <Spinner label="Chargement..." />
+  return (
+    <DashboardLayout>
+      <div className="grid lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <div className="space-y-3">
+            <Skeleton className="h-3 w-32" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="aspect-square rounded-xl" />
+              ))}
+            </div>
+          </div>
+          <Skeleton className="h-96 rounded-2xl" />
         </div>
-      </DashboardLayout>
-    )
-  }
+        <div className="lg:col-span-1 space-y-6">
+          <Skeleton className="h-48 rounded-2xl" />
+          <Skeleton className="h-40 rounded-2xl" />
+        </div>
+      </div>
+    </DashboardLayout>
+  )
+}
 
   if (!model) {
     return (
@@ -401,47 +423,74 @@ export default function ModelDetail() {
         </div>
 
         {/* Colonne droite : actions dangereuses */}
-        <div className="lg:col-span-1">
-          <div className="lg:sticky lg:top-24 space-y-6">
+<div className="lg:col-span-1">
+  <div className="lg:sticky lg:top-24 space-y-6">
 
-            {/* Publication */}
-            <div className="card">
-              <p className="font-overline text-pierre-500 mb-3">Publication</p>
-              <p className="text-sm text-noir mb-4 leading-relaxed">
-                {model.status === 'published'
-                  ? 'Cette création est visible par vos clients.'
-                  : 'Cette création est en brouillon, invisible publiquement.'}
-              </p>
-              {model.status === 'published' ? (
-                <button onClick={handleUnpublish} className="btn-secondary text-sm w-full">
-                  Dépublier
-                </button>
-              ) : (
-                <button onClick={handlePublish} className="btn-primary text-sm w-full">
-                  Publier cette création
-                </button>
-              )}
-            </div>
+    {/* Publication */}
+    <div className="card space-y-3">
+      <p className="font-overline text-pierre-500">Publication</p>
+      <p className="text-sm text-noir leading-relaxed">
+        {model.status === 'published'
+          ? 'Cette création est visible par vos clients.'
+          : 'Cette création est en brouillon, invisible publiquement.'}
+      </p>
 
-            {/* Danger zone */}
-            <div className="card border-alerte/20">
-              <p className="font-overline text-alerte mb-3">Zone sensible</p>
-              <p className="text-sm text-pierre-600 mb-4 leading-relaxed">
-                Supprimer cette création est irréversible.
-              </p>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="w-full text-sm font-medium text-alerte border border-alerte/30 hover:bg-alerte-soft rounded-[10px] py-2.5 transition-colors disabled:opacity-50"
-              >
-                {deleting ? 'Suppression...' : 'Supprimer la création'}
-              </button>
-            </div>
+      {model.status === 'published' ? (
+        <button onClick={handleUnpublish} className="btn-secondary text-sm w-full">
+          Dépublier
+        </button>
+      ) : (
+        <button onClick={handlePublish} className="btn-primary text-sm w-full">
+          Publier cette création
+        </button>
+      )}
 
-          </div>
-        </div>
+      {/* Bouton partage (toujours visible si image existe) */}
+      <button
+        type="button"
+        onClick={() => setShareOpen(true)}
+        disabled={!model.images?.[0]}
+        className="w-full text-sm font-medium text-noir border border-pierre-300 hover:border-noir rounded-[10px] py-2.5 transition disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        📸 Créer une image de partage
+      </button>
+    </div>
+
+    {/* Danger zone */}
+    <div className="card border-alerte/20">
+      <p className="font-overline text-alerte mb-3">Zone sensible</p>
+      <p className="text-sm text-pierre-600 mb-4 leading-relaxed">
+        Supprimer cette création est irréversible.
+      </p>
+      <button
+        onClick={handleDelete}
+        disabled={deleting}
+        className="w-full text-sm font-medium text-alerte border border-alerte/30 hover:bg-alerte-soft rounded-[10px] py-2.5 transition-colors disabled:opacity-50"
+      >
+        {deleting ? 'Suppression...' : 'Supprimer la création'}
+      </button>
+    </div>
+
+  </div>
+</div>
 
       </div>
+
+      {/* Share modal (hors du grid, juste avant la fermeture du layout) */}
+      {shareOpen && model.images?.[0] && (
+        <ShareModal
+          data={{
+            imagePath: model.images[0].path,
+            modelName: model.name,
+            price: model.price,
+            currency: model.currency,
+            shopName: shopName || 'Ma vitrine',
+            logoPath: null,
+          }}
+          onClose={() => setShareOpen(false)}
+        />
+      )}
+
     </DashboardLayout>
   )
 }

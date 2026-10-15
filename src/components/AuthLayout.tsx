@@ -1,9 +1,9 @@
-import { ReactNode } from 'react'
+import { ReactNode } from "react";
 
 interface Props {
-  children: ReactNode
-  title: string
-  subtitle: string
+  children: ReactNode;
+  title: string;
+  subtitle: string;
 }
 
 export default function AuthLayout({ children, title, subtitle }: Props) {
@@ -29,33 +29,33 @@ export default function AuthLayout({ children, title, subtitle }: Props) {
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blanc-casse flex items-center justify-center">
-              <span className="font-serif text-2xl text-noir leading-none pt-0.5">
-                S
-              </span>
+            <div className="w-10 h-10 rounded-xl overflow-hidden">
+              <img
+                src="/icone1.svg"
+                alt="Logo"
+                className="w-full h-full object-cover"
+              />
             </div>
             <span className="text-sm font-medium tracking-[0.2em] uppercase text-blanc-casse/70">
-              SaaS Stylistes
+              Stylward
             </span>
           </div>
 
           {/* Message central */}
           <div className="max-w-md">
-            <p className="font-overline text-beige mb-6">
-              L'art de créer
-            </p>
+            <p className="font-overline text-beige mb-6">L'art de créer</p>
             <h2 className="font-display text-4xl xl:text-5xl leading-[1.1] text-blanc-casse mb-6">
-              Chaque styliste mérite sa propre vitrine.
+              Chaque artisan de la mode mérite sa propre vitrine.
             </h2>
             <p className="text-blanc-casse/60 leading-relaxed">
-              Créez votre boutique numérique, présentez vos créations et
-              partagez votre univers avec vos clients grâce à un seul lien.
+              Créez votre vitrine numérique, présentez vos créations et partagez
+              votre univers avec vos clients grâce à un seul lien.
             </p>
           </div>
 
           {/* Footer */}
           <div className="flex items-center justify-between text-xs text-blanc-casse/40">
-            <span>© 2026 SaaS Stylistes</span>
+            <span>© 2026 Stylward</span>
             <span>Made with care</span>
           </div>
         </div>
@@ -66,29 +66,27 @@ export default function AuthLayout({ children, title, subtitle }: Props) {
         <div className="w-full max-w-md">
           {/* Logo mobile */}
           <div className="lg:hidden flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 rounded-xl bg-noir flex items-center justify-center">
-              <span className="font-serif text-2xl text-blanc-casse leading-none pt-0.5">
-                S
-              </span>
+            <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
+              <img
+                src="/icone1.svg"
+                alt="Stylward"
+                className="w-full h-full object-cover"
+              />
             </div>
             <span className="text-sm font-medium tracking-[0.2em] uppercase text-pierre-500">
-              SaaS Stylistes
+              Stylward
             </span>
           </div>
 
           {/* En-tête du formulaire */}
           <div className="mb-10">
-            <h1 className="font-display text-3xl text-noir mb-2">
-              {title}
-            </h1>
-            <p className="text-pierre-500 text-[15px]">
-              {subtitle}
-            </p>
+            <h1 className="font-display text-3xl text-noir mb-2">{title}</h1>
+            <p className="text-pierre-500 text-[15px]">{subtitle}</p>
           </div>
 
           {children}
         </div>
       </main>
     </div>
-  )
+  );
 }

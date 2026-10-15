@@ -1,13 +1,13 @@
 {
-  "name": "SaaS Stylistes",
-  "short_name": "Stylistes",
-  "description": "Découvrez les créations de vos stylistes préférés.",
+  "name": "Stylward",
+  "short_name": "Artisans de la mode",
+  "description": "Découvrez les créations de vos artisans de la mode préférés.",
   "theme_color": "#171717",
   "background_color": "#FCFBF8",
   "display": "standalone",
   "orientation": "portrait",
   "start_url": "/",
-  "scope": "/",
+  "scope": "/", 
   "icons": [
     {
       "src": "/icon-192.png",

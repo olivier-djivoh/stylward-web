@@ -1,122 +1,131 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { api } from '../lib/api'
-import { track } from '../lib/tracker'
-import Spinner from '../components/Spinner'
-import ScrollToTopButton from '../components/ScrollToTopButton'
-import FavoriteButton from '../components/FavoriteButton'
-import { getFavoritesByShop, onFavoritesChanged } from '../lib/favorites'
+import { useEffect, useRef, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { api } from "../lib/api";
+import { track } from "../lib/tracker";
+import Spinner from "../components/Spinner";
+import ScrollToTopButton from "../components/ScrollToTopButton";
+import FavoriteButton from "../components/FavoriteButton";
+import { getFavoritesByShop, onFavoritesChanged } from "../lib/favorites";
+import PublicShopSkeleton from "../components/skeletons/PublicShopSkeleton";
+import { Helmet } from "react-helmet-async";
 
 interface Shop {
-  id: string
-  name: string
-  slug: string
-  description: string | null
-  phone: string | null
-  whatsapp: string | null
-  logo_path: string | null
-  cover_path: string | null
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  logo_path: string | null;
+  cover_path: string | null;
 }
 
 interface Model {
-  id: string
-  name: string
-  description: string | null
-  price: string | null
-  currency: string
-  color: string | null
-  reference: string | null
-  status: string
-  published_at: string | null
-  category: { id: string; name: string; slug: string } | null
-  images: { id: string; path: string; type: string }[]
+  id: string;
+  name: string;
+  description: string | null;
+  price: string | null;
+  currency: string;
+  color: string | null;
+  reference: string | null;
+  status: string;
+  published_at: string | null;
+  category: { id: string; name: string; slug: string } | null;
+  images: { id: string; path: string; type: string }[];
 }
 
 export default function PublicShop() {
-  const { slug } = useParams<{ slug: string }>()
-  const [shop, setShop] = useState<Shop | null>(null)
-  const [models, setModels] = useState<Model[]>([])
-  const [activeCategory, setActiveCategory] = useState<string | null>(null)
-  const [search, setSearch] = useState('')
-  const [sortBy, setSortBy] = useState<'recent' | 'price_asc' | 'price_desc'>('recent')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const trackedRef = useRef(false)
+  const { slug } = useParams<{ slug: string }>();
+  const [shop, setShop] = useState<Shop | null>(null);
+  const [models, setModels] = useState<Model[]>([]);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"recent" | "price_asc" | "price_desc">(
+    "recent",
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const trackedRef = useRef(false);
 
-  const [favoritesCount, setFavoritesCount] = useState(0)
+  const [favoritesCount, setFavoritesCount] = useState(0);
+  const [collections, setCollections] = useState<any[]>([]);
 
-useEffect(() => {
-  if (!slug) return
-  function update() {
-    setFavoritesCount(getFavoritesByShop(slug!).length)
-  }
-  update()
-  const unsubscribe = onFavoritesChanged(update)
-  return () => {
-    unsubscribe()
-  }
-}, [slug])
+  useEffect(() => {
+    if (!slug) return;
+    function update() {
+      setFavoritesCount(getFavoritesByShop(slug!).length);
+    }
+    update();
+    const unsubscribe = onFavoritesChanged(update);
+    return () => {
+      unsubscribe();
+    };
+  }, [slug]);
 
   useEffect(() => {
     async function load() {
-      if (!slug) return
+      if (!slug) return;
       try {
-        const [shopRes, modelsRes] = await Promise.all([
+        const [shopRes, modelsRes, collectionsRes] = await Promise.all([
           api.get(`/public/shops/${slug}`),
           api.get(`/public/shops/${slug}/models`),
-        ])
-        setShop(shopRes.data)
-        setModels(modelsRes.data.data || [])
+          api
+            .get(`/public/shops/${slug}/collections`)
+            .catch(() => ({ data: { data: [] } })),
+        ]);
+        setShop(shopRes.data);
+        setModels(modelsRes.data.data || []);
+        setCollections(collectionsRes.data.data || []);
 
         if (!trackedRef.current) {
-          trackedRef.current = true
-          track(slug, 'view_shop')
+          trackedRef.current = true;
+          track(slug, "view_shop");
         }
       } catch (err) {
-        console.error('Erreur chargement boutique :', err)
-        setError('Boutique introuvable')
+        console.error("Erreur chargement boutique :", err);
+        setError("Vitrine introuvable");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-    load()
-  }, [slug])
+    load();
+  }, [slug]);
 
   const categories = Array.from(
     new Map(
       models
         .filter((m) => m.category)
-        .map((m) => [m.category!.id, m.category!])
-    ).values()
-  )
+        .map((m) => [m.category!.id, m.category!]),
+    ).values(),
+  );
 
   const filteredModels = models
-  .filter((m) => !activeCategory || m.category?.id === activeCategory)
-  .filter((m) => {
-    if (!search.trim()) return true
-    const q = search.toLowerCase().trim()
-    return (
-      m.name.toLowerCase().includes(q) ||
-      (m.description?.toLowerCase().includes(q) ?? false) ||
-      (m.color?.toLowerCase().includes(q) ?? false) ||
-      (m.reference?.toLowerCase().includes(q) ?? false)
-    )
-  })
-  .sort((a, b) => {
-    if (sortBy === 'price_asc') {
-      return Number(a.price ?? 0) - Number(b.price ?? 0)
-    }
-    if (sortBy === 'price_desc') {
-      return Number(b.price ?? 0) - Number(a.price ?? 0)
-    }
-    // 'recent' : par date de publication
-    const dateA = a.published_at ? new Date(a.published_at).getTime() : 0
-    const dateB = b.published_at ? new Date(b.published_at).getTime() : 0
-    return dateB - dateA
-  })
+    .filter((m) => !activeCategory || m.category?.id === activeCategory)
+    .filter((m) => {
+      if (!search.trim()) return true;
+      const q = search.toLowerCase().trim();
+      return (
+        m.name.toLowerCase().includes(q) ||
+        (m.description?.toLowerCase().includes(q) ?? false) ||
+        (m.color?.toLowerCase().includes(q) ?? false) ||
+        (m.reference?.toLowerCase().includes(q) ?? false)
+      );
+    })
+    .sort((a, b) => {
+      if (sortBy === "price_asc") {
+        return Number(a.price ?? 0) - Number(b.price ?? 0);
+      }
+      if (sortBy === "price_desc") {
+        return Number(b.price ?? 0) - Number(a.price ?? 0);
+      }
+      // 'recent' : par date de publication
+      const dateA = a.published_at ? new Date(a.published_at).getTime() : 0;
+      const dateB = b.published_at ? new Date(b.published_at).getTime() : 0;
+      return dateB - dateA;
+    });
 
   if (loading) {
-    return <Spinner fullScreen label="Chargement..." />
+    return <PublicShopSkeleton />;
   }
 
   if (error || !shop) {
@@ -127,31 +136,37 @@ useEffect(() => {
             Erreur 404
           </p>
           <h1 className="font-serif text-4xl text-neutral-900 mb-3">
-            Boutique introuvable
+            Vitrine introuvable
           </h1>
           <p className="text-neutral-500 text-sm">
-            Cette boutique n'existe pas ou n'est plus active.
+            Cette vitrine n'existe pas ou n'est plus active.
           </p>
         </div>
       </div>
-    )
+    );
   }
 
-  const whatsappNumber = shop.whatsapp?.replace(/[^\d]/g, '') || ''
+  const whatsappNumber = shop.whatsapp?.replace(/[^\d]/g, "") || "";
   const waMessage = encodeURIComponent(
-    `Bonjour ${shop.name}, je vous contacte depuis votre boutique en ligne.`
-  )
+    `Bonjour ${shop.name}, je vous contacte depuis votre vitrine en ligne.`,
+  );
 
   // Détecte si un modèle est "nouveau" (publié dans les 14 derniers jours)
   function isNew(model: Model): boolean {
-    if (!model.published_at) return false
-    const published = new Date(model.published_at).getTime()
-    const fourteenDaysAgo = Date.now() - 14 * 24 * 60 * 60 * 1000
-    return published > fourteenDaysAgo
+    if (!model.published_at) return false;
+    const published = new Date(model.published_at).getTime();
+    const fourteenDaysAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
+    return published > fourteenDaysAgo;
   }
 
   return (
     <div className="min-h-screen bg-white selection:bg-neutral-900 selection:text-white">
+      {shop && (
+        <Helmet>
+          <title>{shop.name} — Stylward</title>
+          <meta name="description" content={shop.description || ""} />
+        </Helmet>
+      )}
 
       {/* ═══════════════════════════════════════════
           NAVIGATION
@@ -181,21 +196,27 @@ useEffect(() => {
           </Link>
 
           <div className="flex items-center gap-2 shrink-0 ml-4">
-  {/* Favoris */}
-  {favoritesCount > 0 && (
-    <Link
-      to={`/shops/${shop.slug}/favorites`}
-      className="relative p-2 text-pierre-500 hover:text-noir transition-colors"
-      aria-label="Mes favoris"
-    >
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-        <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-      </svg>
-      <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-noir text-blanc-casse text-[9px] font-bold flex items-center justify-center">
-        {favoritesCount}
-      </span>
-    </Link>
-  )}
+            {/* Favoris */}
+            {favoritesCount > 0 && (
+              <Link
+                to={`/shops/${shop.slug}/favorites`}
+                className="relative p-2 text-pierre-500 hover:text-noir transition-colors"
+                aria-label="Mes favoris"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.75}
+                >
+                  <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-noir text-blanc-casse text-[9px] font-bold flex items-center justify-center">
+                  {favoritesCount}
+                </span>
+              </Link>
+            )}
 
             {/* Contacter WhatsApp */}
             {whatsappNumber && (
@@ -262,7 +283,13 @@ useEffect(() => {
                 className="inline-flex items-center gap-3 mt-10 text-white/90 text-xs uppercase tracking-[0.25em] font-medium border-b border-white/30 pb-1 hover:border-white hover:text-white transition-all"
               >
                 Découvrir la collection
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
                   <path d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                 </svg>
               </a>
@@ -271,11 +298,67 @@ useEffect(() => {
         </div>
       </section>
 
+      {/* ═══ COLLECTIONS ═══ */}
+      {collections.length > 0 && (
+        <section className="bg-ivoire border-y border-beige-soft">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-24">
+            <div className="text-center mb-12">
+              <div className="flex items-center justify-center gap-3 mb-5">
+                <span className="w-8 h-px bg-brun/30" />
+                <p className="text-[11px] uppercase tracking-[0.3em] text-brun/70 font-medium">
+                  Collections
+                </p>
+                <span className="w-8 h-px bg-brun/30" />
+              </div>
+              <h2 className="font-serif text-3xl sm:text-4xl text-noir">
+                Parcourez par univers
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {collections.map((c) => (
+                <Link
+                  key={c.id}
+                  to={`/shops/${shop.slug}/collections/${c.slug}`}
+                  className="group block bg-white rounded-2xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                >
+                  <div className="aspect-[4/3] bg-pierre-100 overflow-hidden">
+                    {c.cover_path ? (
+                      <img
+                        src={`/storage/${c.cover_path}`}
+                        alt={c.name}
+                        className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-pierre-300 bg-gradient-to-br from-pierre-100 to-pierre-200">
+                        <span className="font-serif text-4xl text-pierre-400">
+                          {c.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-5">
+                    <h3 className="font-serif text-lg text-noir mb-1 group-hover:text-brun transition">
+                      {c.name}
+                    </h3>
+                    <p className="text-xs text-pierre-500">
+                      {c.models_count} création{c.models_count > 1 ? "s" : ""}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ═══════════════════════════════════════════
           CATALOGUE
           ═══════════════════════════════════════════ */}
-      <section id="catalogue" className="max-w-6xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
-
+      <section
+        id="catalogue"
+        className="max-w-6xl mx-auto px-5 sm:px-8 py-20 sm:py-28"
+      >
         {/* En-tête section */}
         <div className="text-center mb-12 sm:mb-16">
           {/* Ornement */}
@@ -292,10 +375,10 @@ useEffect(() => {
           </h2>
 
           <p className="text-neutral-500 text-sm mt-5 tracking-wide">
-            {filteredModels.length} pièce{filteredModels.length > 1 ? 's' : ''}
+            {filteredModels.length} pièce{filteredModels.length > 1 ? "s" : ""}
             {activeCategory && (
               <span className="text-neutral-900">
-                {' · '}
+                {" · "}
                 {categories.find((c) => c.id === activeCategory)?.name}
               </span>
             )}
@@ -310,8 +393,8 @@ useEffect(() => {
               onClick={() => setActiveCategory(null)}
               className={`px-5 py-2.5 rounded-full text-[12px] uppercase tracking-[0.12em] whitespace-nowrap transition-all duration-300 font-medium ${
                 activeCategory === null
-                  ? 'bg-neutral-900 text-white shadow-md'
-                  : 'bg-white text-neutral-500 border border-neutral-200 hover:border-neutral-400 hover:text-neutral-900'
+                  ? "bg-neutral-900 text-white shadow-md"
+                  : "bg-white text-neutral-500 border border-neutral-200 hover:border-neutral-400 hover:text-neutral-900"
               }`}
             >
               Tout
@@ -323,8 +406,8 @@ useEffect(() => {
                 onClick={() => setActiveCategory(cat.id)}
                 className={`px-5 py-2.5 rounded-full text-[12px] uppercase tracking-[0.12em] whitespace-nowrap transition-all duration-300 font-medium ${
                   activeCategory === cat.id
-                    ? 'bg-neutral-900 text-white shadow-md'
-                    : 'bg-white text-neutral-500 border border-neutral-200 hover:border-neutral-400 hover:text-neutral-900'
+                    ? "bg-neutral-900 text-white shadow-md"
+                    : "bg-white text-neutral-500 border border-neutral-200 hover:border-neutral-400 hover:text-neutral-900"
                 }`}
               >
                 {cat.name}
@@ -333,9 +416,8 @@ useEffect(() => {
           </div>
         )}
 
-                {/* Barre de recherche + tri */}
+        {/* Barre de recherche + tri */}
         <div className="flex flex-col sm:flex-row gap-3 mb-8 sm:mb-12 max-w-2xl mx-auto">
-
           {/* Recherche */}
           <div className="relative flex-1">
             <svg
@@ -357,11 +439,17 @@ useEffect(() => {
             {search && (
               <button
                 type="button"
-                onClick={() => setSearch('')}
+                onClick={() => setSearch("")}
                 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-pierre-200 hover:bg-pierre-300 flex items-center justify-center transition"
                 aria-label="Effacer"
               >
-                <svg className="w-3 h-3 text-pierre-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg
+                  className="w-3 h-3 text-pierre-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
                   <path d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -395,14 +483,14 @@ useEffect(() => {
         {filteredModels.length === 0 ? (
           <div className="text-center py-24 border border-dashed border-neutral-200 rounded-3xl">
             <h3 className="font-serif text-2xl text-neutral-900 mb-3">
-              {activeCategory ? 'Aucune pièce' : 'Collection à venir'}
+              {activeCategory ? "Aucune pièce" : "Collection à venir"}
             </h3>
             <p className="text-neutral-500 text-sm max-w-sm mx-auto">
               {search
                 ? `Aucun résultat pour « ${search} ».`
                 : activeCategory
-                ? 'Cette catégorie est vide pour le moment.'
-                : 'Le styliste prépare ses premières créations.'}
+                  ? "Cette catégorie est vide pour le moment."
+                  : "L'artisan de la mode prépare ses premières créations."}
             </p>
           </div>
         ) : (
@@ -437,14 +525,14 @@ useEffect(() => {
                   )}
 
                   {/* ← AJOUT */}
-                    <FavoriteButton
-                      shopSlug={shop.slug}
-                      modelId={model.id}
-                      name={model.name}
-                      image={model.images?.[0]?.path ?? null}
-                      price={model.price}
-                      currency={model.currency}
-                    />
+                  <FavoriteButton
+                    shopSlug={shop.slug}
+                    modelId={model.id}
+                    name={model.name}
+                    image={model.images?.[0]?.path ?? null}
+                    price={model.price}
+                    currency={model.currency}
+                  />
 
                   {/* Overlay discret au survol (desktop) */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 hidden sm:flex items-end justify-center pb-5">
@@ -466,7 +554,7 @@ useEffect(() => {
                   </h3>
                   {model.price && (
                     <p className="text-neutral-500 text-sm pt-0.5">
-                      {Number(model.price).toLocaleString('fr-FR')}{' '}
+                      {Number(model.price).toLocaleString("fr-FR")}{" "}
                       <span className="text-neutral-400 text-xs tracking-wider">
                         {model.currency}
                       </span>
@@ -485,7 +573,6 @@ useEffect(() => {
       {whatsappNumber && (
         <section className="bg-ivoire border-y border-beige-soft">
           <div className="max-w-3xl mx-auto px-5 sm:px-8 py-20 sm:py-28 text-center">
-
             {/* Ornement */}
             <div className="flex items-center justify-center gap-3 mb-6">
               <span className="w-8 h-px bg-brun/30" />
@@ -499,7 +586,7 @@ useEffect(() => {
               Discutons de votre projet
             </h2>
             <p className="text-brun/70 text-sm max-w-md mx-auto mb-10 leading-relaxed">
-              Le styliste vous répondra directement sur WhatsApp pour toute
+              L'artisan de la mode vous répondra directement sur WhatsApp pour toute
               commande ou demande personnalisée.
             </p>
 
@@ -522,15 +609,15 @@ useEffect(() => {
           FOOTER
           ═══════════════════════════════════════════ */}
       <footer className="bg-white border-t border-neutral-100 py-10">
-  <div className="max-w-6xl mx-auto px-5 sm:px-8 text-center">
-    <p className="text-[11px] uppercase tracking-[0.22em] text-neutral-400">
-      Propulsé par{' '}
-      <span className="text-neutral-900 font-medium">SaaS Stylistes</span>
-    </p>
-  </div>
-</footer>
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 text-center">
+          <p className="text-[11px] uppercase tracking-[0.22em] text-neutral-400">
+            Propulsé par{" "}
+            <span className="text-neutral-900 font-medium">Stylward</span>
+          </p>
+        </div>
+      </footer>
 
- <ScrollToTopButton />
+      <ScrollToTopButton />
 
       {/* Animation keyframes injectées */}
       <style>{`
@@ -543,7 +630,6 @@ useEffect(() => {
           to { transform: scale(1.15); }
         }
       `}</style>
-
     </div>
-  )
+  );
 }

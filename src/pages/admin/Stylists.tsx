@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { api } from '../../lib/api'
 import AdminLayout from '../../components/AdminLayout'
 import Spinner from '../../components/Spinner'
+import { useToast } from '../../contexts/ToastContext'
+import AdminListSkeleton from '../../components/skeletons/AdminListSkeleton'
 
 interface Shop {
   id: string
@@ -22,6 +24,7 @@ interface Stylist {
 
 export default function Stylists() {
   const [stylists, setStylists] = useState<Stylist[]>([])
+  const toast = useToast()
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [success, setSuccess] = useState('')
@@ -51,17 +54,16 @@ export default function Stylists() {
 
     try {
       await api.patch(`/admin/stylists/${stylist.id}/${action}`)
-      setSuccess(`Compte ${action === 'suspend' ? 'suspendu' : 'réactivé'}.`)
+      toast.success(`Compte ${action === 'suspend' ? 'suspendu' : 'réactivé'}.`)
       await load()
-      setTimeout(() => setSuccess(''), 3000)
     } catch {
-      alert('Erreur lors de la modification')
+      toast.error('Erreur lors de la modification')
     }
   }
 
   return (
     <AdminLayout
-      title="Stylistes"
+      title="Artisans de la mode"
       subtitle={`${stylists.length} compte${stylists.length > 1 ? 's' : ''}`}
     >
       <div className="space-y-6">
@@ -94,10 +96,10 @@ export default function Stylists() {
 
         {/* Liste */}
         {loading ? (
-          <div className="py-20 flex justify-center"><Spinner /></div>
+          <AdminListSkeleton count={5} />
         ) : stylists.length === 0 ? (
           <div className="card text-center py-16">
-            <p className="text-pierre-500">Aucun styliste trouvé.</p>
+            <p className="text-pierre-500">Aucun artisan de la mode trouvé.</p>
           </div>
         ) : (
           <div className="card p-0 overflow-hidden">

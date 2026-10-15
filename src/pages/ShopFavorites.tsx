@@ -7,6 +7,7 @@ import {
   onFavoritesChanged,
 } from '../lib/favorites'
 import type { FavoriteItem } from '../lib/favorites'
+import ModelsGridSkeleton from '../components/skeletons/ModelsGridSkeleton'
 
 interface Shop {
   name: string
@@ -42,8 +43,12 @@ export default function ShopFavorites() {
 }, [slug])
 
   if (loading) {
-    return <Spinner fullScreen label="Chargement..." />
-  }
+  return (
+    <div className="max-w-6xl mx-auto px-5 sm:px-8 py-20">
+      <ModelsGridSkeleton count={6} />
+    </div>
+  )
+}
 
   if (!shop) return null
 

@@ -26,24 +26,38 @@ import AdminArchives from './pages/admin/Archives'
 import Notifications from './pages/Notifications'
 import ShopFavorites from './pages/ShopFavorites'
 import InstallPWA from './components/InstallPWA'
+import Collections from './pages/Collections'
+import CollectionDetail from './pages/CollectionDetail'
+import PublicCollection from './pages/PublicCollection'
+import { ToastProvider } from './contexts/ToastContext'
+import PageTransition from './components/PageTransition'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
+import { HelmetProvider } from 'react-helmet-async';
 function App() {
   return (
+    <HelmetProvider>
     <BrowserRouter>
+      <ToastProvider>
       <ScrollToTop />
       <AuthProvider>
         <InstallPWA />
+        <PageTransition>
         <Routes>
           {/* ─── Routes publiques ─── */}
           <Route path="/shops/:slug/models/:modelId" element={<PublicModel />} />
           <Route path="/shops/:slug" element={<PublicShop />} />
+          <Route path="/shops/:slug/collections/:collectionSlug" element={<PublicCollection />} />
           <Route path="/shops/:slug/favorites" element={<ShopFavorites />} />
 
           {/* ─── Auth ─── */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password"  element={<ResetPassword />} />
           <Route path="/account/deletion/confirm/:token" element={<ConfirmDeletion />} />
 
-          {/* ─── Dashboard styliste (protégé) ─── */}
+          {/* ─── Dashboard artisan de la mode (protégé) ─── */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/dashboard/models" element={<ProtectedRoute><Models /></ProtectedRoute>} />
           <Route path="/dashboard/models/new" element={<ProtectedRoute><CreateModel /></ProtectedRoute>} />
@@ -57,6 +71,8 @@ function App() {
           {<ProtectedRoute><Settings /></ProtectedRoute>}/>
           <Route path="/dashboard/notifications"element=
           {<ProtectedRoute><Notifications /></ProtectedRoute>}/>
+          <Route path="/dashboard/collections" element={<ProtectedRoute><Collections /></ProtectedRoute>} />
+          <Route path="/dashboard/collections/:id" element={<ProtectedRoute><CollectionDetail /></ProtectedRoute>} />
 
           {/* ─── Admin SaaS (protégé + rôle admin) ─── */}
           <Route path="/admin/archives" element={<AdminRoute><AdminArchives /></AdminRoute>} />
@@ -69,8 +85,12 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </PageTransition>
       </AuthProvider>
+      </ToastProvider>
     </BrowserRouter>
+    </HelmetProvider>
+
   )
 }
 

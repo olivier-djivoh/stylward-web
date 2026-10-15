@@ -2,6 +2,8 @@ import { FormEvent, useEffect, useState } from 'react'
 import { api } from '../../lib/api'
 import AdminLayout from '../../components/AdminLayout'
 import Spinner from '../../components/Spinner'
+import { useToast } from '../../contexts/ToastContext'
+import AdminListSkeleton from '../../components/skeletons/AdminListSkeleton'
 
 interface Category {
   id: string
@@ -12,6 +14,7 @@ interface Category {
 
 export default function AdminCategories() {
   const [categories, setCategories] = useState<Category[]>([])
+  const toast = useToast()
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState({ name: '', sort_order: '' })
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -59,20 +62,19 @@ export default function AdminCategories() {
     try {
       if (isEditing) {
         await api.put(`/admin/categories/${editingId}`, payload)
-        setSuccess(`Catégorie « ${currentName} » modifiée.`)
+        toast.success(`Catégorie « ${currentName} » modifiée.`)
       } else {
         await api.post('/admin/categories', payload)
-        setSuccess(`Catégorie « ${currentName} » créée.`)
+        toast.success(`Catégorie « ${currentName} » créée.`)
       }
       resetForm()
       await load()
-      setTimeout(() => setSuccess(''), 3000)
     } catch (err: any) {
       if (err.response?.data?.errors) {
         const first = Object.values(err.response.data.errors)[0]
         setError(Array.isArray(first) ? first[0] : String(first))
       } else {
-        setError('Erreur lors de l\'enregistrement')
+        toast.error('Erreur lors de l\'enregistrement')
       }
     } finally {
       setSaving(false)
@@ -83,12 +85,11 @@ export default function AdminCategories() {
     if (!confirm(`Supprimer la catégorie « ${name} » ?`)) return
     try {
       await api.delete(`/admin/categories/${id}`)
-      setSuccess(`Catégorie « ${name} » supprimée.`)
+      toast.success(`Catégorie « ${name} » supprimée.`)
       setError('')
       await load()
-      setTimeout(() => setSuccess(''), 3000)
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erreur lors de la suppression')
+      toast.error(err.response?.data?.message || 'Erreur lors de la suppression')
     }
   }
 
@@ -164,7 +165,7 @@ export default function AdminCategories() {
         {/* Liste */}
         <div className="min-w-0 lg:col-span-2">
           {loading ? (
-            <div className="py-20 flex justify-center"><Spinner /></div>
+            <AdminListSkeleton count={8} />
           ) : categories.length === 0 ? (
             <div className="card text-center py-16">
               <p className="text-pierre-500">Aucune catégorie.</p>

@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
 import DashboardLayout from '../components/DashboardLayout'
 import Spinner from '../components/Spinner'
+import { useToast } from '../contexts/ToastContext'
 import ImageUploader from '../components/ImageUploader'
+import ModelsGridSkeleton from '../components/skeletons/ModelsGridSkeleton'
+
 
 interface Model {
   id: string
@@ -13,17 +16,27 @@ interface Model {
   currency: string
   color: string | null
   status: string
+  created_at: string
   category: { id: string; name: string } | null
   images: { id: string; path: string }[]
 }
 
 type Filter = 'all' | 'published' | 'draft'
+type Sort =
+  | 'recent'
+  | 'oldest'
+  | 'name_asc'
+  | 'name_desc'
+  | 'price_asc'
+  | 'price_desc'
 
 export default function Models() {
+  const toast = useToast()
   const [models, setModels] = useState<Model[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<Filter>('all')
   const [search, setSearch] = useState('')
+  const [sort, setSort] = useState<Sort>('recent')
 
   async function load() {
     try {
@@ -48,6 +61,7 @@ export default function Models() {
 
   async function handlePublish(modelId: string) {
     await api.patch(`/models/${modelId}/publish`)
+    toast.success('Modèle publié.')
     setModels((prev) =>
       prev.map((m) => (m.id === modelId ? { ...m, status: 'published' } : m))
     )
@@ -55,6 +69,7 @@ export default function Models() {
 
   async function handleUnpublish(modelId: string) {
     await api.patch(`/models/${modelId}/unpublish`)
+    toast.success('Modèle dépublié.')
     setModels((prev) =>
       prev.map((m) => (m.id === modelId ? { ...m, status: 'draft' } : m))
     )
@@ -64,9 +79,10 @@ export default function Models() {
     if (!confirm(`Supprimer "${name}" ? Cette action est irréversible.`)) return
     try {
       await api.delete(`/models/${modelId}`)
+      toast.success('Modèle supprimé.')
       setModels((prev) => prev.filter((m) => m.id !== modelId))
     } catch {
-      alert('Erreur lors de la suppression')
+      toast.error('Erreur lors de la suppression')
     }
   }
 
@@ -79,6 +95,23 @@ export default function Models() {
     .filter((m) =>
       search ? m.name.toLowerCase().includes(search.toLowerCase()) : true
     )
+    .sort((a, b) => {
+      switch (sort) {
+        case 'oldest':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        case 'name_asc':
+          return a.name.localeCompare(b.name)
+        case 'name_desc':
+          return b.name.localeCompare(a.name)
+        case 'price_asc':
+          return (Number(a.price) || 0) - (Number(b.price) || 0)
+        case 'price_desc':
+          return (Number(b.price) || 0) - (Number(a.price) || 0)
+        case 'recent':
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      }
+    })
 
   const counts = {
     all: models.length,
@@ -97,9 +130,7 @@ export default function Models() {
       }
     >
       {loading ? (
-        <div className="py-20 flex justify-center">
-          <Spinner label="Chargement..." />
-        </div>
+        <ModelsGridSkeleton count={8} />
       ) : models.length === 0 ? (
         <div className="card text-center py-16">
           <p className="font-display text-2xl text-noir mb-2">
@@ -115,7 +146,7 @@ export default function Models() {
         </div>
       ) : (
         <>
-          {/* Barre de filtres et recherche */}
+          {/* Barre de filtres, recherche et tri */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="flex gap-1 p-1 bg-pierre-100 rounded-lg w-fit">
               {([
@@ -158,6 +189,20 @@ export default function Models() {
                 className="input-field pl-11"
               />
             </div>
+
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as Sort)}
+              className="input-field w-fit pr-8 cursor-pointer"
+              title="Trier par"
+            >
+              <option value="recent">Plus récentes</option>
+              <option value="oldest">Plus anciennes</option>
+              <option value="name_asc">Nom (A → Z)</option>
+              <option value="name_desc">Nom (Z → A)</option>
+              <option value="price_asc">Prix croissant</option>
+              <option value="price_desc">Prix décroissant</option>
+            </select>
           </div>
 
           {/* Grille de créations */}

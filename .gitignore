@@ -23,3 +23,13 @@ dist-ssr
 *.sln
 *.sw?
 node_modules 
+
+
+# Fichiers de debug
+frontend_dump.txt
+frontend_structure.txt
+*_dump.txt
+*_structure.txt
+
+# Scripts Windows perso
+*.cmd

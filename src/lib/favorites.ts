@@ -8,7 +8,7 @@ export interface FavoriteItem {
   savedAt: string
 }
 
-const STORAGE_KEY = 'saas_stylistes_favorites'
+const STORAGE_KEY = 'stylward_favorites'
 
 export function getFavorites(): FavoriteItem[] {
   try {
