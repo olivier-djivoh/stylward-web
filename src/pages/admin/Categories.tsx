@@ -4,6 +4,8 @@ import AdminLayout from '../../components/AdminLayout'
 import Spinner from '../../components/Spinner'
 import { useToast } from '../../contexts/ToastContext'
 import AdminListSkeleton from '../../components/skeletons/AdminListSkeleton'
+import { CheckCircle } from 'lucide-react'
+import { useConfirm } from '../../contexts/ConfirmContext'
 
 interface Category {
   id: string
@@ -15,6 +17,7 @@ interface Category {
 export default function AdminCategories() {
   const [categories, setCategories] = useState<Category[]>([])
   const toast = useToast()
+  const confirm = useConfirm()
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState({ name: '', sort_order: '' })
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -81,8 +84,15 @@ export default function AdminCategories() {
     }
   }
 
-  async function handleDelete(id: string, name: string) {
-    if (!confirm(`Supprimer la catégorie « ${name} » ?`)) return
+    async function handleDelete(id: string, name: string) {
+    const isConfirmed = await confirm({
+      title: 'Supprimer la catégorie ?',
+      message: `Êtes-vous sûr de vouloir supprimer la catégorie "${name}" ? Elle ne doit être utilisée par aucune création.`,
+      confirmText: 'Supprimer',
+      variant: 'danger'
+    })
+    if (!isConfirmed) return
+
     try {
       await api.delete(`/admin/categories/${id}`)
       toast.success(`Catégorie « ${name} » supprimée.`)
@@ -114,8 +124,9 @@ export default function AdminCategories() {
                 </div>
               )}
               {success && (
-                <div className="p-3 rounded-lg bg-succes-soft border border-succes/20 text-succes text-xs">
-                  ✅ {success}
+                <div className="p-3 rounded-lg bg-succes-soft border border-succes/20 text-succes text-xs flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  {success}
                 </div>
               )}
 

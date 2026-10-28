@@ -31,7 +31,7 @@ export default function AuthLayout({ children, title, subtitle }: Props) {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl overflow-hidden">
               <img
-                src="/icone1.svg"
+                src="/stylward-logo.svg"
                 alt="Logo"
                 className="w-full h-full object-cover"
               />
@@ -68,7 +68,7 @@ export default function AuthLayout({ children, title, subtitle }: Props) {
           <div className="lg:hidden flex items-center gap-3 mb-10">
             <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
               <img
-                src="/icone1.svg"
+                src="/stylward-logo.svg"
                 alt="Stylward"
                 className="w-full h-full object-cover"
               />

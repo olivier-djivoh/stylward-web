@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
+import NotificationIcon from './NotificationIcon'
 
 interface Notification {
   id: string
@@ -74,22 +75,7 @@ export default function NotificationBell() {
     return `Il y a ${days} j`
   }
 
-  function iconFor(type: string) {
-    switch (type) {
-      case 'new_visit':
-        return '👁️'
-      case 'whatsapp_click':
-        return '💬'
-      case 'shop_activated':
-        return '✅'
-      case 'shop_suspended':
-        return '⚠️'
-      case 'model_published':
-        return '🎨'
-      default:
-        return '🔔'
-    }
-  }
+ 
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -140,7 +126,9 @@ export default function NotificationBell() {
                   }`}
                 >
                   <div className="flex gap-3">
-                    <span className="text-xl shrink-0">{iconFor(n.type)}</span>
+                    <span className="shrink-0">
+                      <NotificationIcon type={n.type} className="w-5 h-5" />
+                    </span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-noir leading-snug">
                         {n.title}

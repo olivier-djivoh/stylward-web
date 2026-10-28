@@ -4,6 +4,8 @@ import AdminLayout from "../../components/AdminLayout";
 import Spinner from "../../components/Spinner";
 import { useToast } from "../../contexts/ToastContext";
 import AdminListSkeleton from "../../components/skeletons/AdminListSkeleton";
+import { CheckCircle } from 'lucide-react'
+import { useConfirm } from '../../contexts/ConfirmContext'
 
 interface Shop {
   id: string;
@@ -24,6 +26,7 @@ export default function AdminShops() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [success, setSuccess] = useState("");
+  const confirm = useConfirm();
 
   async function load() {
     setLoading(true);
@@ -45,19 +48,27 @@ export default function AdminShops() {
     load();
   }
 
-  async function toggleStatus(shop: Shop) {
-    const action = shop.status === "active" ? "suspend" : "activate";
-    const verb = action === "suspend" ? "suspendre" : "réactiver";
-    if (!confirm(`Voulez-vous ${verb} "${shop.name}" ?`)) return;
+    async function toggleStatus(shop: Shop) {
+    const action = shop.status === 'active' ? 'suspend' : 'activate'
+    const isSuspending = action === 'suspend'
+    
+    const isConfirmed = await confirm({
+      title: isSuspending ? 'Suspendre la vitrine ?' : 'Réactiver la vitrine ?',
+      message: isSuspending 
+        ? `La vitrine "${shop.name}" ne sera plus accessible par les clients. Vous pourrez la réactiver plus tard.`
+        : `La vitrine "${shop.name}" sera de nouveau accessible publiquement.`,
+      confirmText: isSuspending ? 'Suspendre' : 'Réactiver',
+      variant: isSuspending ? 'danger' : 'default'
+    })
+
+    if (!isConfirmed) return
 
     try {
-      await api.patch(`/admin/shops/${shop.id}/${action}`);
-      toast.success(
-        `Boutique ${action === "suspend" ? "suspendue" : "réactivée"}.`,
-      );
-      await load();
+      await api.patch(`/admin/shops/${shop.id}/${action}`)
+      toast.success(`Vitrine ${isSuspending ? 'suspendue' : 'réactivée'}.`)
+      await load()
     } catch {
-      toast.error("Erreur lors de la modification");
+      toast.error('Erreur lors de la modification')
     }
   }
 
@@ -109,8 +120,9 @@ export default function AdminShops() {
         </form>
 
         {success && (
-          <div className="p-4 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm">
-            ✅ {success}
+          <div className="p-4 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm flex items-center gap-2">
+            <CheckCircle className="w-4 h-4" />
+            {success}
           </div>
         )}
 

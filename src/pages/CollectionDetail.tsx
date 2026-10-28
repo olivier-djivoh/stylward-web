@@ -5,6 +5,8 @@ import DashboardLayout from '../components/DashboardLayout'
 import Spinner from '../components/Spinner'
 import { useToast } from '../contexts/ToastContext'
 import ModelsGridSkeleton from '../components/skeletons/ModelsGridSkeleton'
+import { CheckCircle } from 'lucide-react'
+import { useConfirm } from '../contexts/ConfirmContext'
 
 interface Model {
   id: string
@@ -30,6 +32,7 @@ export default function CollectionDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const toast = useToast()
+  const confirm = useConfirm()
   const inputRef = useRef<HTMLInputElement>(null)
 
   const [collection, setCollection] = useState<Collection | null>(null)
@@ -116,9 +119,17 @@ export default function CollectionDetail() {
     }
   }
 
-  async function handleRemoveModel(modelId: string) {
+    async function handleRemoveModel(modelId: string) {
     if (!collection) return
-    if (!confirm('Retirer ce modèle de la collection ?')) return
+    // Remplacer le confirm
+    const isConfirmed = await confirm({
+      title: 'Retirer la création ?',
+      message: 'Cette création sera retirée de la collection (elle ne sera pas supprimée de votre catalogue).',
+      confirmText: 'Retirer',
+      variant: 'default'
+    })
+    if (!isConfirmed) return
+
     try {
       await api.delete(`/collections/${collection.id}/models/${modelId}`)
       setCollection({
@@ -142,9 +153,17 @@ export default function CollectionDetail() {
     setCollection({ ...collection, status: 'draft' })
   }
 
-  async function handleDelete() {
+    async function handleDelete() {
     if (!collection) return
-    if (!confirm(`Supprimer la collection "${collection.name}" ?`)) return
+    // Remplacer le confirm
+    const isConfirmed = await confirm({
+      title: 'Supprimer la collection ?',
+      message: `Êtes-vous sûr de vouloir supprimer la collection "${collection.name}" ? Cette action est irréversible.`,
+      confirmText: 'Supprimer',
+      variant: 'danger'
+    })
+    if (!isConfirmed) return
+
     await api.delete(`/collections/${collection.id}`)
     navigate('/dashboard/collections')
   }
@@ -217,8 +236,9 @@ export default function CollectionDetail() {
       </div>
 
       {success && (
-        <div className="mb-6 p-4 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm">
-          ✅ {success}
+        <div className="mb-6 p-4 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm flex items-center gap-2">
+          <CheckCircle className="w-4 h-4" />
+          {success}
         </div>
       )}
       {error && (

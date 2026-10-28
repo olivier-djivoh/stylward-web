@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
 import AdminLayout from "../../components/AdminLayout";
-import Spinner from "../../components/Spinner";
 import DashboardSkeleton from "../../components/skeletons/DashboardSkeleton";
+import { ArrowRight } from "lucide-react"; // 👈 Ajout de l'import
+
 interface Stats {
   stylists: number;
   shops: number;
@@ -87,7 +88,7 @@ export default function AdminDashboard() {
           </div>
 
           <div className="card">
-            <p className="font-overline text-pierre-500 mb-2">Santé</p>
+            <p className="font-overline text-pierre-500 mb-2">Statut</p>
             <p className="text-4xl font-display text-succes">
               {stats.activeShops}
             </p>
@@ -116,9 +117,8 @@ export default function AdminDashboard() {
                     <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                 </div>
-                <span className="text-pierre-400 group-hover:text-noir transition">
-                  →
-                </span>
+                {/* 👇 Remplacement de la flèche 👇 */}
+                <ArrowRight className="w-4 h-4 text-pierre-400 group-hover:text-noir transition" />
               </div>
               <h3 className="font-display text-lg text-noir mb-1">Artisans de la mode</h3>
               <p className="text-sm text-pierre-500">
@@ -139,9 +139,8 @@ export default function AdminDashboard() {
                     <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                   </svg>
                 </div>
-                <span className="text-pierre-400 group-hover:text-noir transition">
-                  →
-                </span>
+                {/* 👇 Remplacement de la flèche 👇 */}
+                <ArrowRight className="w-4 h-4 text-pierre-400 group-hover:text-noir transition" />
               </div>
               <h3 className="font-display text-lg text-noir mb-1">Vitrines</h3>
               <p className="text-sm text-pierre-500">Modérer et superviser</p>
@@ -160,9 +159,8 @@ export default function AdminDashboard() {
                     <path d="M7 7h.01M7 3h5a1.99 1.99 0 011.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                   </svg>
                 </div>
-                <span className="text-pierre-400 group-hover:text-noir transition">
-                  →
-                </span>
+                {/* 👇 Remplacement de la flèche 👇 */}
+                <ArrowRight className="w-4 h-4 text-pierre-400 group-hover:text-noir transition" />
               </div>
               <h3 className="font-display text-lg text-noir mb-1">
                 Catégories
@@ -185,9 +183,8 @@ export default function AdminDashboard() {
                     <path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                   </svg>
                 </div>
-                <span className="text-pierre-400 group-hover:text-noir transition">
-                  →
-                </span>
+                {/* 👇 Remplacement de la flèche 👇 */}
+                <ArrowRight className="w-4 h-4 text-pierre-400 group-hover:text-noir transition" />
               </div>
               <h3 className="font-display text-lg text-noir mb-1">Archives</h3>
               <p className="text-sm text-pierre-500">Comptes supprimés</p>

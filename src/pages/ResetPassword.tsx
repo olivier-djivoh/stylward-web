@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import AuthLayout from '../components/AuthLayout'
+import { CheckCircle } from 'lucide-react'
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams()
@@ -58,8 +59,9 @@ export default function ResetPassword() {
         subtitle="Vous pouvez maintenant vous connecter."
       >
         <div className="space-y-6">
-          <div className="p-4 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm leading-relaxed">
-            ✅ Votre mot de passe a été réinitialisé avec succès. Redirection...
+          <div className="p-4 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm leading-relaxed flex items-center gap-2">
+            <CheckCircle className="w-4 h-4" />
+            Votre mot de passe a été réinitialisé avec succès. Redirection...
           </div>
           <Link to="/login" className="btn-primary w-full justify-center">
             Se connecter maintenant

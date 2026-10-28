@@ -4,6 +4,8 @@ import AdminLayout from '../../components/AdminLayout'
 import Spinner from '../../components/Spinner'
 import { useToast } from '../../contexts/ToastContext'
 import AdminListSkeleton from '../../components/skeletons/AdminListSkeleton'
+import { CheckCircle } from 'lucide-react'
+import { useConfirm } from '../../contexts/ConfirmContext'
 
 interface Shop {
   id: string
@@ -25,6 +27,7 @@ interface Stylist {
 export default function Stylists() {
   const [stylists, setStylists] = useState<Stylist[]>([])
   const toast = useToast()
+  const confirm = useConfirm()
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [success, setSuccess] = useState('')
@@ -47,14 +50,24 @@ export default function Stylists() {
     load()
   }
 
-  async function toggleStatus(stylist: Stylist) {
+    async function toggleStatus(stylist: Stylist) {
     const action = stylist.status === 'active' ? 'suspend' : 'activate'
-    const verb = action === 'suspend' ? 'suspendre' : 'réactiver'
-    if (!confirm(`Voulez-vous ${verb} ${stylist.first_name} ${stylist.last_name} ?`)) return
+    const isSuspending = action === 'suspend'
+    
+    const isConfirmed = await confirm({
+      title: isSuspending ? 'Suspendre le compte ?' : 'Réactiver le compte ?',
+      message: isSuspending 
+        ? `Le compte de ${stylist.first_name} ${stylist.last_name} sera suspendu. Il ne pourra plus se connecter.`
+        : `Le compte de ${stylist.first_name} ${stylist.last_name} sera de nouveau actif.`,
+      confirmText: isSuspending ? 'Suspendre' : 'Réactiver',
+      variant: isSuspending ? 'danger' : 'default'
+    })
+
+    if (!isConfirmed) return
 
     try {
       await api.patch(`/admin/stylists/${stylist.id}/${action}`)
-      toast.success(`Compte ${action === 'suspend' ? 'suspendu' : 'réactivé'}.`)
+      toast.success(`Compte ${isSuspending ? 'suspendu' : 'réactivé'}.`)
       await load()
     } catch {
       toast.error('Erreur lors de la modification')
@@ -89,8 +102,9 @@ export default function Stylists() {
         </form>
 
         {success && (
-          <div className="p-4 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm">
-            ✅ {success}
+          <div className="p-4 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm flex items-center gap-2">
+            <CheckCircle className="w-4 h-4" />
+            {success}
           </div>
         )}
 

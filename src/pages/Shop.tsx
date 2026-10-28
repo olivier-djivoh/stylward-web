@@ -7,6 +7,7 @@ import ShopImageUploader from "../components/ShopImageUploader";
 import { useToast } from "../contexts/ToastContext";
 import { shareContent, canNativeShare } from "../lib/share";
 import DashboardSkeleton from "../components/skeletons/DashboardSkeleton";
+import { FileText, CheckCircle } from 'lucide-react'
 
 interface Shop {
   id: string;
@@ -209,8 +210,9 @@ export default function ShopPage() {
 
       {/* Messages globaux */}
       {success && (
-        <div className="mb-6 p-4 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm">
-          ✅ {success}
+        <div className="mb-6 p-4 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm flex items-center gap-2">
+          <CheckCircle className="w-4 h-4" />
+          {success}
         </div>
       )}
       {error && (
@@ -295,9 +297,14 @@ export default function ShopPage() {
                       disabled={downloadingPdf}
                       className="btn-secondary text-sm py-2.5 justify-center col-span-2 sm:col-span-4"
                     >
-                      {downloadingPdf
-                        ? "Génération..."
-                        : "📄 Télécharger le catalogue PDF"}
+                      {downloadingPdf ? (
+                        'Génération...'
+                      ) : (
+                        <>
+                          <FileText className="w-4 h-4" />
+                          Télécharger le catalogue PDF
+                        </>
+                      )}
                     </button>
                   </div>
                 </>

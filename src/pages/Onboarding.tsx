@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
 import Spinner from "../components/Spinner";
+import { Hand } from 'lucide-react'
 
 type Step = 1 | 2 | 3;
 
@@ -76,7 +77,7 @@ export default function Onboarding() {
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-md overflow-hidden shrink-0">
                 <img
-                  src="/icone1.svg"
+                  src="/stylward-logo.svg"
                   alt="Stylward"
                   className="w-full h-full object-cover"
                 />
@@ -107,7 +108,7 @@ export default function Onboarding() {
           <div className="text-center space-y-8 animate-[fade-up_0.5s_ease-out]">
             {/* Icône */}
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white shadow-lg border border-pierre-100">
-              <span className="text-4xl">👋</span>
+              <Hand className="w-10 h-10 text-dore animate-wave" strokeWidth={2} />
             </div>
 
             {/* Titre */}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import Spinner from '../components/Spinner'
+import { Lock } from 'lucide-react'
 
 export default function ConfirmDeletion() {
   const { token } = useParams<{ token: string }>()

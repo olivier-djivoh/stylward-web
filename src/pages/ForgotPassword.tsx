@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
 import AuthLayout from '../components/AuthLayout'
+import { CheckCircle } from 'lucide-react'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
@@ -34,8 +35,9 @@ export default function ForgotPassword() {
     >
       {sent ? (
         <div className="space-y-6">
-          <div className="p-4 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm leading-relaxed">
-            ✅ Si un compte existe avec cette adresse, un email vient de vous être envoyé.
+          <div className="p-4 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm leading-relaxed flex items-center gap-2">
+            <CheckCircle className="w-4 h-4" />
+            Si un compte existe avec cette adresse, un email vient de vous être envoyé.
           </div>
           <p className="text-sm text-pierre-500 leading-relaxed">
             Vérifiez votre boîte de réception (et vos spams). Le lien est valable <strong>60 minutes</strong>.

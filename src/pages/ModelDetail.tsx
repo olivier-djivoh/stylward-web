@@ -8,6 +8,8 @@ import MultiImageUploader from '../components/MultiImageUploader'
 import ShareModal from '../components/ShareModal'
 import ModelsGridSkeleton from '../components/skeletons/ModelsGridSkeleton'
 import Skeleton from '../components/Skeleton'
+import { Camera, CheckCircle } from 'lucide-react'
+import { useConfirm } from '../contexts/ConfirmContext' // 👈 AJOUT IMPORT
 
 interface Category {
   id: string
@@ -31,6 +33,8 @@ export default function ModelDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const toast = useToast()
+  const confirm = useConfirm() // 👈 AJOUT INITIALISATION
+  
   const [model, setModel] = useState<Model | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
@@ -51,34 +55,34 @@ export default function ModelDetail() {
   })
 
   useEffect(() => {
-  async function load() {
-    if (!id) return
-    try {
-      const [modelRes, catRes, shopRes] = await Promise.all([
-        api.get(`/models/${id}`),
-        api.get('/categories'),
-        api.get('/shop').catch(() => ({ data: null })),
-      ])
-      const m = modelRes.data.data
-      setModel(m)
-      setCategories(catRes.data.data)
-      setShopName(shopRes.data?.name || '')
-      setForm({
-        name: m.name,
-        category_id: m.category?.id || '',
-        description: m.description || '',
-        price: m.price ? String(Number(m.price)) : '',
-        color: m.color || '',
-        reference: m.reference || '',
-      })
-    } catch {
-      setError('Modèle introuvable')
-    } finally {
-      setLoading(false)
+    async function load() {
+      if (!id) return
+      try {
+        const [modelRes, catRes, shopRes] = await Promise.all([
+          api.get(`/models/${id}`),
+          api.get('/categories'),
+          api.get('/shop').catch(() => ({ data: null })),
+        ])
+        const m = modelRes.data.data
+        setModel(m)
+        setCategories(catRes.data.data)
+        setShopName(shopRes.data?.name || '')
+        setForm({
+          name: m.name,
+          category_id: m.category?.id || '',
+          description: m.description || '',
+          price: m.price ? String(Number(m.price)) : '',
+          color: m.color || '',
+          reference: m.reference || '',
+        })
+      } catch {
+        setError('Modèle introuvable')
+      } finally {
+        setLoading(false)
+      }
     }
-  }
-  load()
-}, [id])
+    load()
+  }, [id])
 
   function update(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -109,7 +113,7 @@ export default function ModelDetail() {
         const first = Object.values(err.response.data.errors)[0]
         setError(Array.isArray(first) ? first[0] : String(first))
       } else {
-       toast.error ('Erreur lors de l\'enregistrement')
+        toast.error('Erreur lors de l\'enregistrement')
       }
     } finally {
       setSaving(false)
@@ -123,8 +127,16 @@ export default function ModelDetail() {
   }
 
   async function handleDeleteImage(imageId: string) {
-    if (!model) return
-    if (!confirm('Supprimer cette image ?')) return
+    if (!model) return // 👈 Sécurité ajoutée
+    
+    const isConfirmed = await confirm({
+      title: 'Supprimer cette image ?',
+      message: 'Cette image sera définitivement retirée de votre création.',
+      confirmText: 'Supprimer',
+      variant: 'danger'
+    })
+    if (!isConfirmed) return
+    
     try {
       await api.delete(`/models/${model.id}/images/${imageId}`)
       setModel((prev) =>
@@ -157,6 +169,18 @@ export default function ModelDetail() {
 
   async function handlePublish() {
     if (!model) return
+    
+    // 👇 REMPLACEMENT DU CONFIRM NATIF
+    if (model.name.includes('(Copie)')) {
+      const isConfirmed = await confirm({
+        title: 'Attention',
+        message: 'Votre modèle s\'appelle encore "Copie". Voulez-vous vraiment le publier avec ce nom ?',
+        confirmText: 'Publier quand même',
+        variant: 'default'
+      })
+      if (!isConfirmed) return
+    }
+    
     await api.patch(`/models/${model.id}/publish`)
     setModel({ ...model, status: 'published' })
   }
@@ -169,7 +193,16 @@ export default function ModelDetail() {
 
   async function handleDelete() {
     if (!model) return
-    if (!confirm(`Supprimer définitivement "${model.name}" ?`)) return
+    
+    // 👇 REMPLACEMENT DU CONFIRM NATIF
+    const isConfirmed = await confirm({
+      title: 'Supprimer la création ?',
+      message: `Êtes-vous sûr de vouloir supprimer définitivement "${model.name}" ? Cette action est irréversible.`,
+      confirmText: 'Supprimer',
+      variant: 'danger'
+    })
+    
+    if (!isConfirmed) return
     setDeleting(true)
     try {
       await api.delete(`/models/${model.id}`)
@@ -181,28 +214,28 @@ export default function ModelDetail() {
   }
 
   if (loading) {
-  return (
-    <DashboardLayout>
-      <div className="grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          <div className="space-y-3">
-            <Skeleton className="h-3 w-32" />
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="aspect-square rounded-xl" />
-              ))}
+    return (
+      <DashboardLayout>
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+            <div className="space-y-3">
+              <Skeleton className="h-3 w-32" />
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="aspect-square rounded-xl" />
+                ))}
+              </div>
             </div>
+            <Skeleton className="h-96 rounded-2xl" />
           </div>
-          <Skeleton className="h-96 rounded-2xl" />
+          <div className="lg:col-span-1 space-y-6">
+            <Skeleton className="h-48 rounded-2xl" />
+            <Skeleton className="h-40 rounded-2xl" />
+          </div>
         </div>
-        <div className="lg:col-span-1 space-y-6">
-          <Skeleton className="h-48 rounded-2xl" />
-          <Skeleton className="h-40 rounded-2xl" />
-        </div>
-      </div>
-    </DashboardLayout>
-  )
-}
+      </DashboardLayout>
+    )
+  }
 
   if (!model) {
     return (
@@ -261,8 +294,9 @@ export default function ModelDetail() {
 
       {/* Messages */}
       {success && (
-        <div className="mb-6 p-4 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm">
-          ✅ {success}
+        <div className="mb-6 p-4 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm flex items-center gap-2">
+          <CheckCircle className="w-4 h-4" />
+          {success}
         </div>
       )}
       {error && (
@@ -423,56 +457,57 @@ export default function ModelDetail() {
         </div>
 
         {/* Colonne droite : actions dangereuses */}
-<div className="lg:col-span-1">
-  <div className="lg:sticky lg:top-24 space-y-6">
+        <div className="lg:col-span-1">
+          <div className="lg:sticky lg:top-24 space-y-6">
 
-    {/* Publication */}
-    <div className="card space-y-3">
-      <p className="font-overline text-pierre-500">Publication</p>
-      <p className="text-sm text-noir leading-relaxed">
-        {model.status === 'published'
-          ? 'Cette création est visible par vos clients.'
-          : 'Cette création est en brouillon, invisible publiquement.'}
-      </p>
+            {/* Publication */}
+            <div className="card space-y-3">
+              <p className="font-overline text-pierre-500">Publication</p>
+              <p className="text-sm text-noir leading-relaxed">
+                {model.status === 'published'
+                  ? 'Cette création est visible par vos clients.'
+                  : 'Cette création est en brouillon, invisible publiquement.'}
+              </p>
 
-      {model.status === 'published' ? (
-        <button onClick={handleUnpublish} className="btn-secondary text-sm w-full">
-          Dépublier
-        </button>
-      ) : (
-        <button onClick={handlePublish} className="btn-primary text-sm w-full">
-          Publier cette création
-        </button>
-      )}
+              {model.status === 'published' ? (
+                <button onClick={handleUnpublish} className="btn-secondary text-sm w-full">
+                  Dépublier
+                </button>
+              ) : (
+                <button onClick={handlePublish} className="btn-primary text-sm w-full">
+                  Publier cette création
+                </button>
+              )}
 
-      {/* Bouton partage (toujours visible si image existe) */}
-      <button
-        type="button"
-        onClick={() => setShareOpen(true)}
-        disabled={!model.images?.[0]}
-        className="w-full text-sm font-medium text-noir border border-pierre-300 hover:border-noir rounded-[10px] py-2.5 transition disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        📸 Créer une image de partage
-      </button>
-    </div>
+              {/* Bouton partage (toujours visible si image existe) */}
+              <button
+                type="button"
+                onClick={() => setShareOpen(true)}
+                disabled={!model.images?.[0]}
+                className="w-full text-sm font-medium text-noir border border-pierre-300 hover:border-noir rounded-[10px] py-2.5 transition disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
+              >
+                <Camera className="w-4 h-4" />
+                Créer une image de partage
+              </button>
+            </div>
 
-    {/* Danger zone */}
-    <div className="card border-alerte/20">
-      <p className="font-overline text-alerte mb-3">Zone sensible</p>
-      <p className="text-sm text-pierre-600 mb-4 leading-relaxed">
-        Supprimer cette création est irréversible.
-      </p>
-      <button
-        onClick={handleDelete}
-        disabled={deleting}
-        className="w-full text-sm font-medium text-alerte border border-alerte/30 hover:bg-alerte-soft rounded-[10px] py-2.5 transition-colors disabled:opacity-50"
-      >
-        {deleting ? 'Suppression...' : 'Supprimer la création'}
-      </button>
-    </div>
+            {/* Danger zone */}
+            <div className="card border-alerte/20">
+              <p className="font-overline text-alerte mb-3">Zone sensible</p>
+              <p className="text-sm text-pierre-600 mb-4 leading-relaxed">
+                Supprimer cette création est irréversible.
+              </p>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="w-full text-sm font-medium text-alerte border border-alerte/30 hover:bg-alerte-soft rounded-[10px] py-2.5 transition-colors disabled:opacity-50"
+              >
+                {deleting ? 'Suppression...' : 'Supprimer la création'}
+              </button>
+            </div>
 
-  </div>
-</div>
+          </div>
+        </div>
 
       </div>
 

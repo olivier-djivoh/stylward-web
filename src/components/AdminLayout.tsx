@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, ReactNode } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import ScrollToTopButton from "./ScrollToTopButton";
+import { ArrowLeft } from 'lucide-react'
 
 interface Props {
   children: ReactNode;
@@ -122,9 +123,10 @@ export default function AdminLayout({
         <div className="px-3 pb-3">
           <Link
             to="/dashboard"
-            className="block w-full text-center text-xs font-medium text-blanc-casse/70 bg-white/5 hover:bg-white/10 rounded-lg py-2.5 transition"
+            className="flex items-center justify-center gap-2 w-full text-xs font-medium text-blanc-casse/70 bg-white/5 hover:bg-white/10 rounded-lg py-2.5 transition"
           >
-            ← Retour au studio
+            <ArrowLeft className="w-4 h-4" />
+            Retour au tableau de bord
           </Link>
         </div>
 

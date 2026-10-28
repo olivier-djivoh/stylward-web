@@ -47,7 +47,7 @@ export default function InstallPWA() {
       <div className="bg-noir text-blanc-casse rounded-2xl shadow-2xl p-4 flex items-start gap-3">
         <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
           <img
-            src="/icone1.svg"
+            src="/stylward-logo.svg"
             alt="Stylward"
             className="w-full h-full object-cover"
           />

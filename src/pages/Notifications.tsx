@@ -4,6 +4,7 @@ import DashboardLayout from '../components/DashboardLayout'
 import Spinner from '../components/Spinner'
 import { emitNotificationsChanged } from '../lib/notifications'
 import NotificationsSkeleton from '../components/skeletons/NotificationsSkeleton'
+import NotificationIcon from '../components/NotificationIcon'
 
 interface Notification {
   id: string
@@ -64,16 +65,7 @@ async function handleDelete(id: string) {
     return `Il y a ${days} j`
   }
 
-  function iconFor(type: string) {
-    switch (type) {
-      case 'new_visit': return '👁️'
-      case 'whatsapp_click': return '💬'
-      case 'shop_activated': return '✅'
-      case 'shop_suspended': return '⚠️'
-      case 'model_published': return '🎨'
-      default: return '🔔'
-    }
-  }
+  
 
   return (
     <DashboardLayout
@@ -107,7 +99,9 @@ async function handleDelete(id: string) {
                   !n.read_at ? 'bg-ivoire/40' : ''
                 }`}
               >
-                <span className="text-2xl shrink-0">{iconFor(n.type)}</span>
+                  <span className="shrink-0">
+                    <NotificationIcon type={n.type} className="w-6 h-6" />
+                  </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-3">
                     <p className="text-sm font-medium text-noir leading-snug">

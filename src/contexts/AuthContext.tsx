@@ -24,6 +24,7 @@ interface AuthContextType {
 } | void>
   register: (data: RegisterData) => Promise<void>
   logout: () => Promise<void>
+  refreshUser: () => Promise<void>
 }
 
 interface RegisterData {
@@ -106,10 +107,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )
+
+  async function refreshUser() {
+  try {
+    const { data } = await api.get<User>('/me')
+    setUser(data)
+    localStorage.setItem('user', JSON.stringify(data))
+  } catch {
+    // ignore
+  }
+}
 }
 
 export function useAuth() {

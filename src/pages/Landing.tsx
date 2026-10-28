@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import ScrollToTopButton from "../components/ScrollToTopButton";
+import { X, Check } from 'lucide-react'
 
 export default function Landing() {
   return (
@@ -12,7 +13,7 @@ export default function Landing() {
           <Link to="/" className="flex items-center gap-3 group">
             <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-105">
               <img
-                src="/icone1.svg"
+                src="/stylward-logo.svg"
                 alt="Stylward"
                 className="w-full h-full object-cover"
               />
@@ -205,8 +206,8 @@ export default function Landing() {
               </div>
               <ul className="space-y-4 text-sm text-pierre-700 leading-relaxed">
                 <li className="flex gap-3">
-                  <span className="text-alerte mt-0.5 shrink-0 font-bold">
-                    ✗
+                  <span className="mt-0.5 shrink-0">
+                    <X className="w-4 h-4 text-alerte" strokeWidth={3} />
                   </span>
                   <span>
                     Vos photos sont dispersées sur WhatsApp, Instagram, dans
@@ -214,22 +215,22 @@ export default function Landing() {
                   </span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="text-alerte mt-0.5 shrink-0 font-bold">
-                    ✗
+                  <span className="mt-0.5 shrink-0">
+                    <X className="w-4 h-4 text-alerte" strokeWidth={3} />
                   </span>
                   <span>
                     Vous renvoyez les mêmes images 10 fois par semaine
                   </span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="text-alerte mt-0.5 shrink-0 font-bold">
-                    ✗
+                  <span className="mt-0.5 shrink-0">
+                    <X className="w-4 h-4 text-alerte" strokeWidth={3} />
                   </span>
                   <span>Vos clients ne savent pas ce que vous proposez</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="text-alerte mt-0.5 shrink-0 font-bold">
-                    ✗
+                  <span className="mt-0.5 shrink-0">
+                    <X className="w-4 h-4 text-alerte" strokeWidth={3} />
                   </span>
                   <span>Vous n'avez pas de "vraie" boutique à montrer</span>
                 </li>
@@ -261,26 +262,26 @@ export default function Landing() {
               </div>
               <ul className="space-y-4 text-sm text-pierre-700 leading-relaxed">
                 <li className="flex gap-3">
-                  <span className="text-succes mt-0.5 shrink-0 font-bold">
-                    ✓
+                  <span className="mt-0.5 shrink-0">
+                    <Check className="w-4 h-4 text-succes" strokeWidth={3} />
                   </span>
                   <span>Une vitrine élégante avec toutes vos créations</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="text-succes mt-0.5 shrink-0 font-bold">
-                    ✓
-                  </span>
+                  <span className="mt-0.5 shrink-0">
+                  <Check className="w-4 h-4 text-succes" strokeWidth={3} />
+                </span>
                   <span>Un seul lien à partager — une seule fois</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="text-succes mt-0.5 shrink-0 font-bold">
-                    ✓
+                  <span className="mt-0.5 shrink-0">
+                    <Check className="w-4 h-4 text-succes" strokeWidth={3} />
                   </span>
                   <span>Vos clients voient exactement ce que vous faites</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="text-succes mt-0.5 shrink-0 font-bold">
-                    ✓
+                  <span className="mt-0.5 shrink-0">
+                    <Check className="w-4 h-4 text-succes" strokeWidth={3} />
                   </span>
                   <span>
                     Vous recevez les commandes directement sur WhatsApp
@@ -497,7 +498,7 @@ export default function Landing() {
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
                 <img
-                  src="/icone1.svg"
+                  src="/stylward-logo.svg"
                   alt="Stylward"
                   className="w-full h-full object-cover"
                 />

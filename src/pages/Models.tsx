@@ -6,6 +6,9 @@ import Spinner from '../components/Spinner'
 import { useToast } from '../contexts/ToastContext'
 import ImageUploader from '../components/ImageUploader'
 import ModelsGridSkeleton from '../components/skeletons/ModelsGridSkeleton'
+import { Copy } from 'lucide-react'
+import { useConfirm } from '../contexts/ConfirmContext'
+
 
 
 interface Model {
@@ -37,6 +40,8 @@ export default function Models() {
   const [filter, setFilter] = useState<Filter>('all')
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<Sort>('recent')
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
+  const confirm = useConfirm()
 
   async function load() {
     try {
@@ -76,7 +81,14 @@ export default function Models() {
   }
 
   async function handleDelete(modelId: string, name: string) {
-    if (!confirm(`Supprimer "${name}" ? Cette action est irréversible.`)) return
+  const isConfirmed = await confirm({
+    title: 'Supprimer cette création ?',
+    message: `Êtes-vous sûr de vouloir supprimer définitivement "${name}" ? Cette action est irréversible.`,
+    confirmText: 'Supprimer',
+    variant: 'danger'
+  })
+  
+  if (!isConfirmed) return
     try {
       await api.delete(`/models/${modelId}`)
       toast.success('Modèle supprimé.')
@@ -85,6 +97,20 @@ export default function Models() {
       toast.error('Erreur lors de la suppression')
     }
   }
+
+  async function handleDuplicate(modelId: string, e: React.MouseEvent) {
+  e.preventDefault() // Empêche d'ouvrir le modèle quand on clique sur le bouton
+  setDuplicatingId(modelId)
+  try {
+    await api.post(`/models/${modelId}/duplicate`)
+    toast.success('Modèle dupliqué en brouillon.')
+    load() // Recharge la liste
+  } catch {
+    toast.error('Erreur lors de la duplication.')
+  } finally {
+    setDuplicatingId(null)
+  }
+}
 
   const filtered = models
     .filter((m) => {
@@ -245,15 +271,34 @@ export default function Models() {
                   </div>
 
                   <div className="mt-3 space-y-1">
-                    <p className="font-medium text-noir text-sm truncate group-hover:text-brun transition-colors">
-                      {model.name}
-                    </p>
-                    {model.price && (
-                      <p className="text-xs text-pierre-500">
-                        {Number(model.price).toLocaleString('fr-FR')} {model.currency}
-                      </p>
-                    )}
-                  </div>
+  <p className="font-medium text-noir text-sm truncate group-hover:text-brun transition-colors">
+    {model.name}
+  </p>
+  {model.price && (
+    <p className="text-xs text-pierre-500">
+      {Number(model.price).toLocaleString('fr-FR')} {model.currency}
+    </p>
+  )}
+  
+  {/* 👇 AJOUTE CE BLOC ICI 👇 */}
+  <div className="pt-1">
+    <button
+      onClick={(e) => handleDuplicate(model.id, e)}
+      disabled={duplicatingId === model.id}
+      className="inline-flex items-center gap-1.5 text-[11px] font-medium text-pierre-400 hover:text-noir transition-colors disabled:opacity-50"
+      title="Dupliquer ce modèle"
+    >
+      {duplicatingId === model.id ? (
+        <span className="w-3 h-3 border-2 border-pierre-300 border-t-pierre-600 rounded-full animate-spin" />
+      ) : (
+        <Copy className="w-3 h-3" />
+      )}
+      {duplicatingId === model.id ? 'Copie...' : 'Dupliquer'}
+    </button>
+  </div>
+  {/* 👆 FIN DU BLOC 👆 */}
+
+</div>
                 </Link>
               ))}
             </div>

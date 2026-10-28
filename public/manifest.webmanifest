@@ -1,14 +1,18 @@
 {
   "name": "Stylward",
-  "short_name": "Artisans de la mode",
-  "description": "Découvrez les créations de vos artisans de la mode préférés.",
-  "theme_color": "#171717",
-  "background_color": "#FCFBF8",
-  "display": "standalone",
-  "orientation": "portrait",
+  "short_name": "Stylward",
+  "description": "La vitrine en ligne des créateurs de mode.",
   "start_url": "/",
-  "scope": "/", 
+  "display": "standalone",
+  "background_color": "#FCFBF8",
+  "theme_color": "#171717",
   "icons": [
+    {
+      "src": "/stylward-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
     {
       "src": "/icon-192.png",
       "sizes": "192x192",

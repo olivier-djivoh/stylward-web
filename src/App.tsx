@@ -1,3 +1,4 @@
+import { ConfirmProvider } from './contexts/ConfirmContext'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -39,6 +40,7 @@ function App() {
     <HelmetProvider>
     <BrowserRouter>
       <ToastProvider>
+        <ConfirmProvider>
       <ScrollToTop />
       <AuthProvider>
         <InstallPWA />
@@ -87,6 +89,7 @@ function App() {
         </Routes>
         </PageTransition>
       </AuthProvider>
+      </ConfirmProvider>
       </ToastProvider>
     </BrowserRouter>
     </HelmetProvider>

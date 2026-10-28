@@ -7,6 +7,7 @@ import Spinner from "../components/Spinner";
 import ShopImageUploader from "../components/ShopImageUploader";
 import { useToast } from "../contexts/ToastContext";
 import DashboardSkeleton from "../components/skeletons/DashboardSkeleton";
+import { Hand, CheckCircle, AlertTriangle } from 'lucide-react'
 
 interface Shop {
   id: string;
@@ -120,9 +121,9 @@ export default function Dashboard() {
       {/* ═══ Message de restauration ═══ */}
       {restoredMessage && (
         <div className="mb-6 p-4 rounded-2xl bg-succes-soft border border-succes/20">
-          <p className="text-sm font-medium text-succes">
-            ✅ Votre compte a été restauré. Votre vitrine est de nouveau en
-            ligne.
+          <p className="text-sm font-medium text-succes flex items-center gap-2">
+            <CheckCircle className="w-4 h-4" />
+            Votre compte a été restauré. Votre vitrine est de nouveau en ligne.
           </p>
         </div>
       )}
@@ -132,8 +133,9 @@ export default function Dashboard() {
         <div className="mb-6 p-4 rounded-2xl bg-alerte-soft border border-alerte/20">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="flex-1">
-              <p className="text-sm font-medium text-alerte mb-1">
-                ⚠️ Votre compte est en cours de suppression
+              <p className="text-sm font-medium text-alerte mb-1 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" />
+                Votre compte est en cours de suppression
               </p>
               <p className="text-xs text-pierre-600 leading-relaxed">
                 Votre vitrine est désactivée et vos données seront supprimées
@@ -174,9 +176,13 @@ export default function Dashboard() {
             month: "long",
           })}
         </p>
-        <h1 className="font-display text-4xl text-noir">
-          Bonjour {user?.first_name} 👋
-        </h1>
+        <h1 className="font-display text-4xl text-noir flex items-center gap-3">
+            Bonjour {user?.first_name}
+            <Hand 
+              className="w-8 h-8 text-dore animate-wave" 
+              strokeWidth={2} 
+            />
+          </h1>
         <p className="text-pierre-500 mt-2">
           {shop
             ? "Voici un aperçu de votre activité."
@@ -191,7 +197,7 @@ export default function Dashboard() {
             Créez votre vitrine
           </h2>
           <p className="text-pierre-500 text-sm mb-6 leading-relaxed">
-            Votre vitrine est votre vitrine. Elle aura un lien unique à partager
+            Votre vitrine vous permet de présenter vos créations. Elle aura un lien unique à partager
             avec vos clients sur WhatsApp.
           </p>
           <Link to="/dashboard/shop/new" className="btn-primary">

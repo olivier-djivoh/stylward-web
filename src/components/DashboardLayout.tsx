@@ -5,6 +5,7 @@ import ScrollToTopButton from "./ScrollToTopButton";
 import NotificationBell from "./NotificationBell";
 import { api } from "../lib/api";
 import { onNotificationsChanged } from "../lib/notifications";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -89,7 +90,7 @@ export default function DashboardLayout({
           <Link to="/dashboard" className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0">
               <img
-                src="/icone1.svg"
+                src="/stylward-logo.svg"
                 alt="Stylward"
                 className="w-full h-full object-cover"
               />
@@ -97,7 +98,7 @@ export default function DashboardLayout({
             <div>
               <p className="text-sm font-medium text-blanc-casse">Stylward</p>
               <p className="text-[10px] uppercase tracking-widest text-blanc-casse/40">
-                Studio
+                Atelier
               </p>
             </div>
           </Link>
@@ -139,9 +140,11 @@ export default function DashboardLayout({
           <div className="px-3 pb-3">
             <Link
               to="/dashboard/shop"
-              className="block w-full text-center text-xs font-medium text-blanc-casse/80 bg-white/5 hover:bg-white/10 rounded-lg py-2.5 transition"
-            >
-              Voir ma vitrine →
+              className="flex items-center justify-center gap-2 w-full text-xs font-medium text-blanc-casse/80 bg-white/5 hover:bg-white/10 rounded-lg py-2.5 transition"
+                >
+              Voir ma vitrine
+              <ArrowRight className="w-4 h-4" />
+
             </Link>
           </div>
         )}
@@ -231,7 +234,7 @@ export default function DashboardLayout({
           <Link to="/dashboard" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0">
               <img
-                src="/icone1.svg"
+                src="/stylward-logo.svg"
                 alt="Stylward"
                 className="w-full h-full object-cover"
               />

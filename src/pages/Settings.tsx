@@ -1,15 +1,17 @@
-import { FormEvent, useState } from "react";
+
+import { FormEvent, useState } from 'react'
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
 import DashboardLayout from "../components/DashboardLayout";
 import { useToast } from "../contexts/ToastContext";
 import FormSkeleton from "../components/skeletons/FormSkeleton";
+import { CheckCircle } from 'lucide-react'
 
 export default function Settings() {
   const navigate = useNavigate();
   const toast = useToast();
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
 
   const [pwdForm, setPwdForm] = useState({
     current_password: "",
@@ -27,6 +29,44 @@ export default function Settings() {
   const [deleteSaving, setDeleteSaving] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [deletionRequested, setDeletionRequested] = useState(false);
+
+  const [profileForm, setProfileForm] = useState({
+  first_name: user?.first_name || '',
+  last_name: user?.last_name || '',
+  email: user?.email || '',
+  phone: user?.phone || '',
+})
+const [profileSaving, setProfileSaving] = useState(false)
+const [profileError, setProfileError] = useState('')
+
+function updateProfile(field: string, value: string) {
+  setProfileForm(prev => ({ ...prev, [field]: value }))
+}
+
+async function handleProfileChange(e: FormEvent) {
+  e.preventDefault()
+  setProfileError('')
+  setProfileSaving(true)
+  try {
+    await api.put('/profile', profileForm)
+    toast.success('Profil mis à jour.')
+    // Met à jour le contexte Auth
+    // On va recharger /me pour être sûr
+    const { data: freshUser } = await api.get('/me')
+    localStorage.setItem('user', JSON.stringify(freshUser))
+    // Si tu as un setUser dans le contexte, appelle-le ici
+    await refreshUser() // solution simple pour rafraîchir
+  } catch (err: any) {
+    if (err.response?.data?.errors) {
+      const first = Object.values(err.response.data.errors)[0]
+      setProfileError(Array.isArray(first) ? first[0] : String(first))
+    } else {
+      toast.error('Erreur lors de la mise à jour')
+    }
+  } finally {
+    setProfileSaving(false)
+  }
+}
 
   function updatePwd(field: string, value: string) {
     setPwdForm((prev) => ({ ...prev, [field]: value }));
@@ -100,26 +140,73 @@ export default function Settings() {
 
       <div className="max-w-2xl space-y-8">
         <section>
-          <p className="font-overline text-pierre-500 mb-4">Informations</p>
-          <div className="card">
-            <dl className="space-y-4">
-              <div>
-                <dt className="text-[10px] uppercase tracking-[0.2em] text-pierre-400 font-medium mb-1">
-                  Nom complet
-                </dt>
-                <dd className="text-sm text-noir font-medium">
-                  {user?.first_name} {user?.last_name}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-[10px] uppercase tracking-[0.2em] text-pierre-400 font-medium mb-1">
-                  Email
-                </dt>
-                <dd className="text-sm text-noir font-mono">{user?.email}</dd>
-              </div>
-            </dl>
-          </div>
-        </section>
+  <p className="font-overline text-pierre-500 mb-4">Informations personnelles</p>
+  <form onSubmit={handleProfileChange} className="card space-y-5">
+    {profileError && (
+      <div className="p-3 rounded-[10px] bg-alerte-soft border border-alerte/20 text-alerte text-sm">
+        {profileError}
+      </div>
+    )}
+
+    <div className="grid sm:grid-cols-2 gap-4">
+      <div>
+        <label className="input-label">Prénom</label>
+        <input
+          type="text"
+          value={profileForm.first_name}
+          onChange={(e) => updateProfile('first_name', e.target.value)}
+          required
+          maxLength={100}
+          className="input-field"
+        />
+      </div>
+      <div>
+        <label className="input-label">Nom</label>
+        <input
+          type="text"
+          value={profileForm.last_name}
+          onChange={(e) => updateProfile('last_name', e.target.value)}
+          required
+          maxLength={100}
+          className="input-field"
+        />
+      </div>
+    </div>
+
+    <div>
+      <label className="input-label">Adresse email</label>
+      <input
+        type="email"
+        value={profileForm.email}
+        onChange={(e) => updateProfile('email', e.target.value)}
+        required
+        className="input-field"
+      />
+    </div>
+
+    <div>
+      <label className="input-label">Téléphone</label>
+      <input
+        type="tel"
+        value={profileForm.phone}
+        onChange={(e) => updateProfile('phone', e.target.value)}
+        maxLength={30}
+        className="input-field"
+        placeholder="+229 97 00 00 00"
+      />
+    </div>
+
+    <div className="pt-2">
+      <button
+        type="submit"
+        disabled={profileSaving}
+        className="btn-primary"
+      >
+        {profileSaving ? 'Enregistrement...' : 'Enregistrer les modifications'}
+      </button>
+    </div>
+  </form>
+</section>
 
         <section>
           <p className="font-overline text-pierre-500 mb-4">Sécurité</p>
@@ -139,8 +226,9 @@ export default function Settings() {
               </div>
             )}
             {pwdSuccess && (
-              <div className="p-3 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm">
-                ✅ {pwdSuccess}
+              <div className="p-3 rounded-[10px] bg-succes-soft border border-succes/20 text-succes text-sm flex items-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                {pwdSuccess}
               </div>
             )}
 
