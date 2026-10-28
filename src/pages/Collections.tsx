@@ -5,6 +5,7 @@ import DashboardLayout from '../components/DashboardLayout'
 import Spinner from '../components/Spinner'
 import { useToast } from '../contexts/ToastContext'
 import CollectionsGridSkeleton from '../components/skeletons/CollectionsGridSkeleton'
+import { STORAGE_URL } from '../lib/api'
 interface Collection {
   id: string
   name: string
@@ -182,7 +183,7 @@ export default function Collections() {
                   <div className="aspect-[4/3] bg-pierre-100 rounded-xl overflow-hidden relative mb-4">
                     {c.cover_path ? (
                       <img
-                        src={`/storage/${c.cover_path}`}
+                        src={`${STORAGE_URL}/${c.cover_path}`}
                         alt={c.name}
                         className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
                       />

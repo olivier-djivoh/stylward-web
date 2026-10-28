@@ -8,6 +8,7 @@ import FavoriteButton from "../components/FavoriteButton";
 import { getFavoritesByShop, onFavoritesChanged } from "../lib/favorites";
 import PublicShopSkeleton from "../components/skeletons/PublicShopSkeleton";
 import { Helmet } from "react-helmet-async";
+import { STORAGE_URL } from '../lib/api'
 
 interface Shop {
   id: string;
@@ -179,7 +180,7 @@ export default function PublicShop() {
           >
             {shop.logo_path ? (
               <img
-                src={`/storage/${shop.logo_path}`}
+                src={`${STORAGE_URL}/${shop.logo_path}`}
                 alt={shop.name}
                 className="w-9 h-9 rounded-full object-cover ring-1 ring-neutral-200 shrink-0 transition-transform duration-300 group-hover:scale-105"
               />
@@ -240,7 +241,7 @@ export default function PublicShop() {
         <div className="relative h-[75vh] min-h-[520px] max-h-[820px] overflow-hidden">
           {shop.cover_path ? (
             <img
-              src={`/storage/${shop.cover_path}`}
+              src={`${STORAGE_URL}/${shop.cover_path}`}
               alt={shop.name}
               className="w-full h-full object-cover scale-105 animate-[slow-zoom_20s_ease-in-out_infinite_alternate]"
             />
@@ -325,7 +326,7 @@ export default function PublicShop() {
                   <div className="aspect-[4/3] bg-pierre-100 overflow-hidden">
                     {c.cover_path ? (
                       <img
-                        src={`/storage/${c.cover_path}`}
+                        src={`${STORAGE_URL}/${c.cover_path}`}
                         alt={c.name}
                         className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
                       />
@@ -506,7 +507,7 @@ export default function PublicShop() {
                 <div className="relative aspect-[3/4] bg-neutral-100 overflow-hidden rounded-xl mb-5">
                   {model.images?.[0] ? (
                     <img
-                      src={`/storage/${model.images[0].path}`}
+                      src={`${STORAGE_URL}/${model.images[0].path}`}
                       alt={model.name}
                       className="w-full h-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
                       loading="lazy"

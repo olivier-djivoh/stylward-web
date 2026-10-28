@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import Spinner from "../components/Spinner";
+import { STORAGE_URL } from '../lib/api'
 
 interface Model {
   id: string;
@@ -86,7 +87,7 @@ export default function PublicCollection() {
           >
             {shop.logo_path ? (
               <img
-                src={`/storage/${shop.logo_path}`}
+                src={`${STORAGE_URL}/${shop.logo_path}`}
                 alt={shop.name}
                 className="w-9 h-9 rounded-full object-cover ring-1 ring-neutral-200 shrink-0"
               />
@@ -116,7 +117,7 @@ export default function PublicCollection() {
         <div className="relative h-[50vh] min-h-[380px] max-h-[560px] overflow-hidden">
           {collection.cover_path ? (
             <img
-              src={`/storage/${collection.cover_path}`}
+              src={`${STORAGE_URL}/${collection.cover_path}`}
               alt={collection.name}
               className="w-full h-full object-cover"
             />
@@ -174,7 +175,7 @@ export default function PublicCollection() {
                 <div className="aspect-[3/4] bg-neutral-100 overflow-hidden rounded-xl mb-5">
                   {model.images?.[0] ? (
                     <img
-                      src={`/storage/${model.images[0].path}`}
+                      src={`${STORAGE_URL}/${model.images[0].path}`}
                       alt={model.name}
                       className="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
                       loading="lazy"

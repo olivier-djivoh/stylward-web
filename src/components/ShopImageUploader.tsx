@@ -1,5 +1,6 @@
 import { ChangeEvent, useRef, useState } from 'react'
 import { api } from '../lib/api'
+import { STORAGE_URL } from '../lib/api'
 
 interface Props {
   type: 'logo' | 'cover'
@@ -62,7 +63,7 @@ export default function ShopImageUploader({
             } bg-neutral-100 overflow-hidden shrink-0`}
           >
             <img
-              src={`/storage/${currentUrl}`}
+              src={`${STORAGE_URL}/${currentUrl}`}
               alt={label}
               className="w-full h-full object-cover"
             />

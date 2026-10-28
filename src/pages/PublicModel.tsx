@@ -7,6 +7,7 @@ import ScrollToTopButton from "../components/ScrollToTopButton";
 import FavoriteButton from "../components/FavoriteButton";
 import PublicModelSkeleton from "../components/skeletons/PublicModelSkeleton";
 import ShareModal from "../components/ShareModal";
+import { STORAGE_URL } from '../lib/api'
 
 interface Shop {
   id: string;
@@ -128,7 +129,7 @@ export default function PublicModel() {
           >
             {shop.logo_path ? (
               <img
-                src={`/storage/${shop.logo_path}`}
+                src={`${STORAGE_URL}/${shop.logo_path}`}
                 alt={shop.name}
                 className="w-9 h-9 rounded-full object-cover ring-1 ring-neutral-200 shrink-0 transition-transform duration-300 group-hover:scale-105"
               />
@@ -165,7 +166,7 @@ export default function PublicModel() {
               {hasImages ? (
                 <img
                   key={model.images[activeImage].id}
-                  src={`/storage/${model.images[activeImage].path}`}
+                  src={`${STORAGE_URL}/${model.images[activeImage].path}`}
                   alt={model.images[activeImage].alt_text || model.name}
                   className="w-full h-full object-cover animate-[fade-in_0.5s_ease-out]"
                 />
@@ -199,7 +200,7 @@ export default function PublicModel() {
                     aria-label={`Voir l'image ${i + 1}`}
                   >
                     <img
-                      src={`/storage/${img.path}`}
+                      src={`${STORAGE_URL}/${img.path}`}
                       alt={img.alt_text || model.name}
                       className="w-full h-full object-cover"
                     />
@@ -385,7 +386,7 @@ export default function PublicModel() {
                   <div className="aspect-[3/4] bg-neutral-100 overflow-hidden rounded-xl mb-3">
                     {r.images?.[0] ? (
                       <img
-                        src={`/storage/${r.images[0].path}`}
+                        src={`${STORAGE_URL}/${r.images[0].path}`}
                         alt={r.name}
                         className="w-full h-full object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
                         loading="lazy"

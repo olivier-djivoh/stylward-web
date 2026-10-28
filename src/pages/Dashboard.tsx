@@ -8,6 +8,7 @@ import ShopImageUploader from "../components/ShopImageUploader";
 import { useToast } from "../contexts/ToastContext";
 import DashboardSkeleton from "../components/skeletons/DashboardSkeleton";
 import { Hand, CheckCircle, AlertTriangle } from 'lucide-react'
+import { STORAGE_URL } from '../lib/api'
 
 interface Shop {
   id: string;
@@ -398,7 +399,7 @@ export default function Dashboard() {
                     <div className="aspect-[3/4] bg-pierre-100 rounded-xl overflow-hidden relative">
                       {model.images?.[0] ? (
                         <img
-                          src={`/storage/${model.images[0].path}`}
+                          src={`${STORAGE_URL}/${model.images[0].path}`}
                           alt={model.name}
                           className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
                         />

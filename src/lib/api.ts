@@ -1,7 +1,14 @@
+
 import axios from 'axios'
 
+// Récupère l'URL de l'API (ex: https://stylward-api.onrender.com/api/v1)
+const API_URL = import.meta.env.VITE_API_URL || '/api/v1'
+
+// Crée l'URL de base pour les images en enlevant le '/api/v1'
+export const STORAGE_URL = API_URL.replace('/api/v1', '') + '/storage'
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api/v1',
+  baseURL: API_URL,
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',

@@ -11,6 +11,8 @@ import Skeleton from '../components/Skeleton'
 import { Camera, CheckCircle } from 'lucide-react'
 import { useConfirm } from '../contexts/ConfirmContext' // 👈 AJOUT IMPORT
 
+import { STORAGE_URL } from '../lib/api'
+
 interface Category {
   id: string
   name: string
@@ -325,7 +327,7 @@ export default function ModelDetail() {
                     className="group relative aspect-square rounded-xl overflow-hidden bg-pierre-100"
                   >
                     <img
-                      src={`/storage/${img.path}`}
+                      src={`${STORAGE_URL}/${img.path}`}
                       alt=""
                       className="w-full h-full object-cover"
                     />

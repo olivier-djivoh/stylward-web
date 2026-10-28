@@ -7,6 +7,7 @@ import { useToast } from '../contexts/ToastContext'
 import ModelsGridSkeleton from '../components/skeletons/ModelsGridSkeleton'
 import { CheckCircle } from 'lucide-react'
 import { useConfirm } from '../contexts/ConfirmContext'
+import { STORAGE_URL } from '../lib/api'
 
 interface Model {
   id: string
@@ -270,7 +271,7 @@ export default function CollectionDetail() {
               {collection.cover_path ? (
                 <>
                   <img
-                    src={`/storage/${collection.cover_path}`}
+                    src={`${STORAGE_URL}/${collection.cover_path}`}
                     alt={collection.name}
                     className="w-full h-full object-cover"
                   />
@@ -339,7 +340,7 @@ export default function CollectionDetail() {
                     <div className="aspect-[3/4] bg-pierre-100 rounded-xl overflow-hidden">
                       {m.images?.[0] ? (
                         <img
-                          src={`/storage/${m.images[0].path}`}
+                          src={`${STORAGE_URL}/m.images[0].path}`}
                           alt={m.name}
                           className="w-full h-full object-cover"
                         />
@@ -478,7 +479,7 @@ export default function CollectionDetail() {
                       <div className="aspect-[3/4] bg-pierre-100 rounded-xl overflow-hidden relative">
                         {m.images?.[0] ? (
                           <img
-                            src={`/storage/${m.images[0].path}`}
+                            src={`${STORAGE_URL}/${m.images[0].path}`}
                             alt={m.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition"
                           />

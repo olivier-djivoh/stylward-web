@@ -8,7 +8,7 @@ import ImageUploader from '../components/ImageUploader'
 import ModelsGridSkeleton from '../components/skeletons/ModelsGridSkeleton'
 import { Copy } from 'lucide-react'
 import { useConfirm } from '../contexts/ConfirmContext'
-
+import { STORAGE_URL } from '../lib/api'
 
 
 interface Model {
@@ -249,7 +249,7 @@ export default function Models() {
                   <div className="aspect-[3/4] bg-pierre-100 rounded-xl overflow-hidden relative">
                     {model.images?.[0] ? (
                       <img
-                        src={`/storage/${model.images[0].path}`}
+                        src={`${STORAGE_URL}/${model.images[0].path}`}
                         alt={model.name}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                       />

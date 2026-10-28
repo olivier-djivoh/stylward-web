@@ -8,6 +8,7 @@ import {
 } from '../lib/favorites'
 import type { FavoriteItem } from '../lib/favorites'
 import ModelsGridSkeleton from '../components/skeletons/ModelsGridSkeleton'
+import { STORAGE_URL } from '../lib/api'
 
 interface Shop {
   name: string
@@ -64,7 +65,7 @@ export default function ShopFavorites() {
           >
             {shop.logo_path ? (
               <img
-                src={`/storage/${shop.logo_path}`}
+                src={`${STORAGE_URL}/${shop.logo_path}`}
                 alt={shop.name}
                 className="w-9 h-9 rounded-full object-cover ring-1 ring-neutral-200 shrink-0"
               />
@@ -137,7 +138,7 @@ export default function ShopFavorites() {
                 <div className="aspect-[3/4] bg-pierre-100 rounded-xl overflow-hidden relative mb-4">
                   {f.image ? (
                     <img
-                      src={`/storage/${f.image}`}
+                      src={`${STORAGE_URL}/${f.image}`}
                       alt={f.name}
                       className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
                     />
